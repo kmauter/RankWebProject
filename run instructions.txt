@@ -1,0 +1,3 @@
+To run client, go to client directory and use 'npm start'
+
+To run server, go to randr directory and use 'py run.py'

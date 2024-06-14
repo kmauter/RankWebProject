@@ -8,6 +8,7 @@ import FormField from './FormField';
 import { routes } from './Routes';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/CustomButton.css';
+import '../styles/index.css';
 
 function RegisterForm() {
     const navigate = useNavigate();
@@ -38,10 +39,10 @@ function RegisterForm() {
     }
 
     return (
-        <div className="flex justify-center items-center min-h-screen w-full px-4">
-            <Form onSubmit={handleRegister} className="w-full max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-4 md:p-8">
-                <div className='flex flex-col md:flex-row'>
-                    <div className='flex flex-col w-full md:w-1/2 md:pr-2'>
+        <div className="centered-container">
+            <Form onSubmit={handleRegister} className="form-container">
+                <div className='form-grid'>
+                    <div className='form-column'>
                         <FormField 
                             id="username" 
                             label="Username" 
@@ -57,7 +58,7 @@ function RegisterForm() {
                             onChange={(e) => setEmail(e.target.value)}
                         />
                     </div>
-                    <div className='flex flex-col w-full md:w-1/2 md:pl-2'>
+                    <div className='form-column'>
                         <FormField 
                             id="password" 
                             label="Password" 
@@ -74,8 +75,8 @@ function RegisterForm() {
                         />
                     </div>
                 </div>
-                <div className='flex justify-between'>
-                    <Link to={routes.login} className="text-blue-600 hover:text-blue-800">
+                <div className='form-footer'>
+                    <Link to={routes.login} className="link">
                         Login
                     </Link>
                     <Button type="submit" className="custom-btn">

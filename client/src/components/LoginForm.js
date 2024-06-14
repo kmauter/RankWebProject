@@ -8,6 +8,7 @@ import FormField from './FormField';
 import { routes } from './Routes';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/CustomButton.css';
+import '../styles/index.css';
 
 
 function LoginForm() {
@@ -34,8 +35,8 @@ function LoginForm() {
     }
     
     return (
-        <div className="flex justify-center items-center min-h-screen w-full px-4">
-            <Form onSubmit={handleLogin} className="w-full max-w-md mx-auto bg-white rounded-lg shadow-lg p-4 md:p-8">
+        <div className="centered-container">
+            <Form onSubmit={handleLogin} className="form-container">
                 <>
                     <FormField 
                         id="username" 
@@ -51,8 +52,8 @@ function LoginForm() {
                         value={password} 
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    <div className='flex justify-between'>
-                        <Link to={routes.register} className="text-blue-600 hover:text-blue-800">
+                    <div className='form-footer'>
+                        <Link to={routes.register} className="link">
                             Register
                         </Link>
                         <Button type="submit" className="custom-btn">
