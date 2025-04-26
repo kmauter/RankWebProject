@@ -3,6 +3,10 @@
   --secondary-green: #16A34A;
   --tertiary-green: #15803D;
 
+  --primary-red: #ef4444;
+  --secondary-red: #dc2626;
+  --tertiary-red: #991b1b;
+
   --primary-color: #61dafb;
 
   --primary-link-color: #1d4ed8;
@@ -34,7 +38,7 @@ code {
 }
 
 .custom-btn {
-  background-color: var(--primary-green);
+  background-color: var(--primary-red);
   color: var(--white);
   font-weight: bold;
   padding: 0.5rem 1rem;
@@ -45,7 +49,7 @@ code {
 }
 
 .custom-btn:hover {
-  background-color: var(--secondary-green);
+  background-color: var(--secondary-red);
 }
 
 .centered-container {
@@ -53,7 +57,7 @@ code {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: var(--background-color);
+  background-color: transparent;
 }
 
 .form-container {
@@ -116,4 +120,130 @@ code {
   .form-column:last-child {
       padding-left: 0.5rem; /* 8px */
   }
+}
+
+.home-bg {
+  background-image: url('../assets/birdsbg.jpg'); /* Replace with your image path */
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-logo {
+  position: absolute;
+  top: 5%;
+  height: 200px; /* Adjust as needed */
+  width: auto;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard {
+  position: relative;
+  min-height: 100vh; /* Full viewport height */
+  width: 100%; /* Full width */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content horizontally */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  background-image: url('../assets/graphpaper.jpg'); /* Replace with your image path */
+  background-size: cover; /* Ensure the image covers the entire screen */
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Prevent tiling */
+  z-index: 0; /* Ensure it stays behind other elements */
+  opacity: 1; /* Adjust opacity as needed */
+}
+
+.dashboard-header {
+  position: relative;
+  width: 100%; /* Full width of the window */
+  height: 100px; /* Fixed height */
+  display: flex;
+  align-items: center; /* Vertically center items */
+  justify-content: space-between; /* Space out the logo and user icon */
+  background-color: transparent; /* Transparent background */
+  z-index: 10; /* Ensure it stays above other elements */
+  overflow: hidden; /* Prevent overflow */
+}
+
+.dashboard-logo {
+  height: 60px; /* Adjust as needed */
+  margin-left: 50px; /* Add some spacing from the left edge */
+  opacity: 0.85; /* Adjust opacity as needed */
+}
+
+.user-icon {
+  height: 70px; /* Adjust as needed */
+  margin-right: 50px; /* Add some spacing from the right edge */
+  opacity: 0.85; /* Adjust opacity as needed */
+}
+
+.corner-image {
+  position: absolute;
+  width: 30px; /* Adjust size as needed */
+  height: 30px; /* Maintain aspect ratio */
+  opacity: 0.85; /* Adjust opacity as needed */
+}
+
+.corner-image.top-left {
+  top: 5px;
+  left: 5px;
+}
+
+.corner-image.top-right {
+  top: 5px;
+  right: 5px;
+}
+
+.corner-image.bottom-left {
+  bottom: 5px;
+  left: 5px;
+}
+
+.corner-image.bottom-right {
+  bottom: 5px;
+  right: 5px;
+}
+
+.dashboard-middle {
+  width: 100%; /* Full width */
+  display: flex;
+  justify-content: center; /* Center the image horizontally */
+}
+
+.dashboard-sketch {
+  width: 100%; /* Make the image fill the full width */
+  height: auto; /* Maintain aspect ratio */
+}
+
+.dashboard-footer {
+  position: absolute; /* Position it relative to the .dashboard container */
+  bottom: 0; /* Stick to the bottom of the page */
+  width: 100%; /* Full width of the screen */
+  height: 150px; /* Fixed height */
+  background-color: transparent; /* Semi-transparent black background */
+  display: flex;
+  justify-content: center; /* Center content horizontally */
+  align-items: center; /* Center content vertically */
+  font-size: 1rem; /* Adjust font size as needed */
+  z-index: 10; /* Ensure it stays above the background */
+}
+
+.footer-content {
+  position: relative;
+  width: 30%; /* Set the width to 40% of the screen */
+  height: 60%; /* Full height of the footer */
+  margin: 0 auto; /* Center the content horizontally */
+  display: flex;
+  justify-content: center; /* Center the text box horizontally */
+  align-items: center; /* Center the text box vertically */
+  flex-wrap: wrap; /* Allow corner images and text to wrap if needed */
 }

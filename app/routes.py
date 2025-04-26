@@ -1,6 +1,10 @@
 from app import app, db
 from app.models import User
 from flask import request
+from flask import jsonify
+import datetime
+import jwt
+from app.config import SECRET_KEY
 
 @app.route('/')
 def index():
@@ -40,6 +44,29 @@ def login():
     user = User.query.filter_by(username=username).first()
 
     if user and user.check_password(password):
-        return 'Login successful!'
+        # Generate a JWT token
+        token = jwt.encode(
+            {
+                'user_id': user.id,
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)  # Token expires in 1 hour
+            },
+            SECRET_KEY,
+            algorithm='HS256'
+        )
+        return jsonify({'message': 'Login successful!', 'token': token, 'user_id': user.id})
     else:
-        return 'Invalid username or password'
+        return jsonify({'message': 'Invalid username or password'}), 401
+    
+@app.route('/api/user-profile', methods=['GET'])
+def get_user_profile():
+    token = request.headers.get('Authorization').split(" ")[1]  # Extract token from "Bearer <token>"
+    try:
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        user = User.query.get(decoded['user_id'])
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+        return jsonify({'username': user.username, 'email': user.email})
+    except jwt.ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired'}), 401
+    except Exception as e:
+        return jsonify({'message': 'Invalid token'}), 401
