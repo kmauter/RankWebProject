@@ -16,6 +16,7 @@
 
   --white: #ffffff;
   --black: #282c34;
+  --grey: rgb(64, 57, 43);
 
   --font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
@@ -23,6 +24,22 @@
   --padding: 32px;
   --border-radius: 8px;
   --transition-speed: 0.3s;
+}
+
+@font-face {
+  font-family: 'HandFont';
+  src: url('../fonts/HandFontMed.woff2') format('woff2'),
+       url('../fonts/HandFontMed.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'HandFont';
+  src: url('../fonts/HandFontBold.woff2') format('woff2'),
+       url('../fonts/HandFontBold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
 }
 
 html, body {
@@ -131,6 +148,7 @@ code {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  opacity: 1;
 }
 
 .home-logo {
@@ -149,12 +167,15 @@ code {
 .dashboard {
   position: relative;
   min-height: 100vh; /* Full viewport height */
+  max-height: 100vh; /* Prevent overflow */
   width: 100%; /* Full width */
   display: flex;
   flex-direction: column;
   align-items: center; /* Center content horizontally */
   overflow-x: hidden; /* Prevent horizontal scrolling */
-  background-image: url('../assets/graphpaper.jpg'); /* Replace with your image path */
+  /* background-image: url('../assets/graphpaper.jpg');  */
+  background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), 
+                url('../assets/graphpaper.jpg'); /* Blend color with image */
   background-size: cover; /* Ensure the image covers the entire screen */
   background-position: center; /* Center the image */
   background-repeat: no-repeat; /* Prevent tiling */
@@ -172,25 +193,155 @@ code {
   background-color: transparent; /* Transparent background */
   z-index: 10; /* Ensure it stays above other elements */
   overflow: hidden; /* Prevent overflow */
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.dashboard-main {
+  position: relative; /* Position it relative to the .dashboard container */
+  font-family: 'HandFont', sans-serif; /* Use the custom font */
+  font-size: 2rem; /* Adjust font size as needed */
+  width: 100%; /* Full width of the container */
+  flex: 1; /* Allow it to grow and fill the available space */
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  overflow: hidden; /* Prevent overflow */
+}
+
+.dashboard-main h1 {
+  font-size: 3rem; /* Adjust font size as needed */
+  margin-bottom: 1rem; /* Space below the heading */
+}
+
+.main-content {
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Responsive grid layout */
+  flex-wrap: wrap; /* Allow items to wrap to the next line */
+  justify-content: center; /* Align items to the left */
+  align-items: normal; /*Align items to the top */
+  gap: 5px; /* Space between items */
+  padding: 10px; /* Padding around the main content */
+  width: 100%; /* Full width of the container */
+  max-height: 100%; /* Prevent overflow */
+  overflow-y: auto; /* Enable vertical scrolling if content overflows */
+  scrollbar-width: none;
+}
+
+.main-content::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for webkit browsers */
+}
+
+.dashboard-footer {
+  position: relative; /* Position it relative to the .dashboard container */
+  bottom: 0; /* Stick to the bottom of the page */
+  width: 100%; /* Full width of the screen */
+  height: 150px; /* Fixed height */
+  background-color: transparent; /* Semi-transparent black background */
+  display: flex;
+  justify-content: center; /* Center content horizontally */
+  align-items: center; /* Center content vertically */
+  font-size: 3rem; /* Adjust font size as needed */
+  z-index: 10; /* Ensure it stays above the background */
+  font-family: 'HandFont', sans-serif; /* Use the custom font */
+  color: rgb(64, 57, 43); /* grey text */
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .dashboard-logo {
   height: 60px; /* Adjust as needed */
   margin-left: 50px; /* Add some spacing from the left edge */
-  opacity: 0.85; /* Adjust opacity as needed */
+  opacity: 1; /* Adjust opacity as needed */
 }
 
 .user-icon {
   height: 70px; /* Adjust as needed */
   margin-right: 50px; /* Add some spacing from the right edge */
-  opacity: 0.85; /* Adjust opacity as needed */
+  opacity: 1; /* Adjust opacity as needed */
+  z-index: 100; /* Ensure it stays above the background */
+}
+
+.user-icon:hover {
+  cursor: pointer; /* Change cursor to pointer on hover */
+  transform: scale(1.05); /* Slightly enlarge the icon on hover */
+  transition: transform 0.1s;
+}
+
+.user-menu {
+  position: absolute;
+  top: 0px;
+  right: 115px; /* Adjust as needed */
+  background-image: url('../assets/Sticky4.png');
+  background-size: contain; /* Ensure the image fits within the container */
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Prevent tiling */
+  width: 150px; /* Adjust size as needed */
+  height: 300px; /* Maintain aspect ratio */
+  z-index: 15;
+  font-family: 'HandFont', sans-serif; /* Use the custom font */
+}
+
+.logout-container {
+  width: 100%;
+  text-align: left;
+}
+
+.logout-text {
+  font-size: 1.5rem;
+  margin: 0;
+  padding-left: 15px;
+  padding-top: 25px;
+  color: rgb(64, 57, 43); /* grey text */
+  cursor: pointer; /* Change cursor to pointer on hover */
+  display: inline-block;
+}
+
+.logout-text:hover {
+  text-decoration: underline; /* Underline on hover */
+}
+
+.settings-container {
+  width: 100%;
+  text-align: left;
+}
+
+.settings-text {
+  font-size: 1.5rem;
+  margin: 0;
+  padding-left: 18px;
+  padding-top: 10px;
+  color: rgb(64, 57, 43); /* grey text */
+  cursor: pointer; /* Change cursor to pointer on hover */
+  display: inline-block;
+}
+
+.settings-text:hover {
+  text-decoration: underline; /* Underline on hover */
+}
+
+.settings-popup {
+  position: fixed;
+  top: 50%; /* Center vertically */
+  left: 40%; /* Center horizontally */
+  transform: translate(-50%, -50%); /* Adjust for exact centering */
+  background-image: url('../assets/Sticky3.png');
+  background-size: contain; /* Ensure the image fits within the container */
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Prevent tiling */
+  width: 500px; /* Adjust size as needed */
+  height: 700px; /* Maintain aspect ratio */
+  z-index: 100;
+  font-family: 'HandFont', sans-serif; /* Use the custom font */
+  display: flex; /* Optional: Flexbox for centering content inside */
+  flex-direction: column; /* Stack content vertically */
+  justify-content: center; /* Center content vertically */
+  align-items: center; /* Center content horizontally */
+  padding: 20px; /* Add padding for inner content */
 }
 
 .corner-image {
   position: absolute;
   width: 30px; /* Adjust size as needed */
   height: 30px; /* Maintain aspect ratio */
-  opacity: 0.85; /* Adjust opacity as needed */
+  opacity: 1; /* Adjust opacity as needed */
 }
 
 .corner-image.top-left {
@@ -224,20 +375,7 @@ code {
   height: auto; /* Maintain aspect ratio */
 }
 
-.dashboard-footer {
-  position: absolute; /* Position it relative to the .dashboard container */
-  bottom: 0; /* Stick to the bottom of the page */
-  width: 100%; /* Full width of the screen */
-  height: 150px; /* Fixed height */
-  background-color: transparent; /* Semi-transparent black background */
-  display: flex;
-  justify-content: center; /* Center content horizontally */
-  align-items: center; /* Center content vertically */
-  font-size: 1rem; /* Adjust font size as needed */
-  z-index: 10; /* Ensure it stays above the background */
-}
-
-.footer-content {
+.footer-container {
   position: relative;
   width: 30%; /* Set the width to 40% of the screen */
   height: 60%; /* Full height of the footer */
@@ -246,4 +384,52 @@ code {
   justify-content: center; /* Center the text box horizontally */
   align-items: center; /* Center the text box vertically */
   flex-wrap: wrap; /* Allow corner images and text to wrap if needed */
+}
+
+.footer-container:hover {
+  cursor: pointer; /* Change cursor to pointer on hover */
+  transform: scale(1.02); /* Scale up the preview on hover */
+  transition: transform 0.2s; /* Smooth transition for scaling */
+}
+
+.footer-container:hover .footer-text-box p {
+  transform: scale(1.05); /* Scale up the title on hover */
+  transition: transform 0.1s; /* Smooth transition for scaling */
+}
+
+.footer-text-box p {
+  margin-top: 10px; /* Adjust this value to move the text lower */
+  margin-bottom: 0; /* Optional: Remove extra bottom margin */
+  font-size: 3rem; /* Adjust font size as needed */
+  text-align: center; /* Center the text */
+}
+
+@media (max-width: 1000px) and (min-width: 701px) {
+  .footer-text-box p {
+      font-size: 2rem; /* Smaller size for screens between 1000px and 700px */
+  }
+}
+
+@media (max-width: 700px) {
+  .footer-text-box p {
+      font-size: 1.5rem; /* Even smaller size for screens below 700px */
+  }
+}
+
+.game-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  height: 450px; /* Adjust height as needed */
+  padding: 20px;
+  background-image: url('../assets/Sticky1.png');
+  background-size: contain; /* Ensure the image fits within the container */
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Prevent tiling */
+  z-index: 200;
+  font-family: 'HandFont', sans-serif; /* Use the custom font */
+  display: flex; /* Optional: Flexbox for centering content inside */
+  flex-direction: column; /* Stack content vertically */
 }

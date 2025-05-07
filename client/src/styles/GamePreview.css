@@ -1,0 +1,46 @@
+.game-preview {
+    position: relative; /* Make this a positioned ancestor for the corner images */
+    width: 100%; /* Set a fixed width for the preview */
+    height: 200px; /* Set a fixed height for the preview */
+    padding: 10px; /* Add padding inside the preview */
+    overflow: hidden; /* Ensure content stays within the bounds */
+    display: flex; /* Use flexbox for layout */
+    justify-content: center; /* Center the content horizontally */
+    align-items: center; /* Center the content vertically */
+}
+
+.game-preview:hover {
+    cursor: pointer; /* Change cursor to pointer on hover */
+    transform: scale(1.02); /* Scale up the preview on hover */
+    transition: transform 0.2s; /* Smooth transition for scaling */
+}
+
+.game-preview:hover .game-title {
+    transform: scale(1.05); /* Scale up the title on hover */
+    transition: transform 0.1s; /* Smooth transition for scaling */
+}
+
+
+.game-title {
+    font-size: 2rem; /* Adjust font size */
+    text-align: center; /* Center the title */
+    color: rgb(64, 57, 43); /* Set text color */
+}
+
+.game-status-icon {
+    position: absolute; /* Position the icon absolutely within the preview */
+    top: 20px; /* Adjust top position */
+    left: 25px; /* Adjust left position */
+    width: auto; /* Set icon size */
+    height: 35px; /* Set icon size */
+    z-index: 5; /* Ensure it stays above the background */
+}
+
+.due-date {
+    position: absolute; /* Position the due date absolutely within the preview */
+    bottom: 0px; /* Adjust bottom position */
+    right: 25px; /* Adjust right position */
+    font-size: 1.7rem; /* Adjust font size */
+    color: rgb(64, 57, 43); /* Set text color */
+    z-index: 5; /* Ensure it stays above the background */
+}
