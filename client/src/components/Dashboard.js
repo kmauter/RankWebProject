@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import GamePreview from './GamePreview';
+import { UserContext } from '../contexts/UserContext';
 
 function Dashboard() {
     const [isUserMenuVisible, setUserMenuVisible] = useState(false);
     const [isSettingsPopupVisible, setSettingsPopupVisible] = useState(false);
     const [isGamePopupVisible, setGamePopupVisible] = useState(false);
     const [selectedGame, setSelectedGame] = useState(null);
+
+    const { user, logout } = useContext(UserContext); // Assuming you have a UserContext to get user info
 
     const gamePreviews = [
         { title: 'Songs About Capitalism', status: 'submissions' , dueDate: 'May 5' },
@@ -16,6 +19,7 @@ function Dashboard() {
 
     const handleUserIconClick = () => {
         console.log('User icon clicked!');
+        console.log('User:', user); // Log user info for debugging
         setUserMenuVisible(!isUserMenuVisible);
     };
 
@@ -38,7 +42,8 @@ function Dashboard() {
 
     const handleLogout = () => {
         console.log('User logged out!');
-        // Add your logout logic here
+        logout();
+        window.location.href = '/';
     };
 
     return (

@@ -1,2 +1,5 @@
 
-- onclick user Icon add logout ui (stickynote)
+
+- onclick for create and join a game buttons
+- where is user data being stored on login?
+- make logout actually logout

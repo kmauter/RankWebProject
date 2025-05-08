@@ -10,6 +10,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/CustomButton.css';
 import '../styles/index.css';
 
+import { jwtDecode } from 'jwt-decode';
+
 function LoginForm() {
     // States to store username, password, and error message
     const [username, setUsername] = useState('');
@@ -26,7 +28,10 @@ function LoginForm() {
             password
         })
         .then(response => {
-            console.log(response.data);
+            const token = response.data.token; // Assuming the token is returned in the response
+            localStorage.setItem('authToken', token); // Store the token in local storage
+            const user = jwtDecode(token); // Decode the token to get user info
+            console.log("Logged in user: ", user); // Log the user info for debugging
             navigate('/dashboard'); // Handle successful login here (e.g., redirect to dashboard)
         })
         .catch(error => {
