@@ -1,0 +1,65 @@
+Refined Database Schema
+
+User
+
+id INTEGER PRIMARY KEY,
+username TEXT UNIQUE NOT NULL,
+email TEXT UNIQUE NOT NULL,
+password_hash TEXT NOT NULL
+
+Game
+
+id INTEGER PRIMARY KEY,
+name TEXT NOT NULL,
+stage TEXT NOT NULL,
+submission_duedate DATE,
+rank_duedate DATE
+
+GameUser (to track users in games – many-to-many)
+
+id INTEGER PRIMARY KEY,
+game_id INTEGER REFERENCES Game(id),
+user_id INTEGER REFERENCES User(id)
+
+Song
+
+id INTEGER PRIMARY KEY,
+user_id INTEGER REFERENCES User(id),
+game_id INTEGER REFERENCES Game(id),
+name TEXT NOT NULL,
+artist TEXT,
+comment TEXT,
+spotify_link TEXT,
+youtube_link TEXT
+
+Rank
+
+id INTEGER PRIMARY KEY,
+user_id INTEGER REFERENCES User(id),
+game_id INTEGER REFERENCES Game(id),
+song_id INTEGER REFERENCES Song(id),
+rank_position INTEGER NOT NULL
+
+1. Should users have games or games have users?
+
+    Both: use a many-to-many relationship via a join table like GameUser. This allows users to join multiple games and games to have multiple users.
+
+2. Do I need private and public keys for something like this?
+
+    Not for core functionality. Public/private keys are usually used for cryptographic operations, like secure API access, user identity verification via signatures, or encryption. You can add them later if you need:
+
+        Secure sharing of data.
+
+        Decentralized authentication.
+
+    For now, stick to securely hashing passwords (e.g., with bcrypt) and use HTTPS.
+
+Additional Suggestions
+
+    Constraints: Add UNIQUE, NOT NULL, and FOREIGN KEY constraints where appropriate.
+
+    Indexes: For better performance, especially on game_id, user_id in join tables.
+
+    Normalization: You've done well. Avoid storing arrays (e.g., [song]) in columns — instead use join tables as shown.
+
+    Enum for stage: Consider a controlled set of values for the stage field (e.g., SUBMISSION, RANKING, COMPLETE) to avoid inconsistent data.

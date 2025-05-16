@@ -1,5 +1,27 @@
 
+MVP
 
-- onclick for create and join a game buttons
-- where is user data being stored on login?
-- make logout actually logout
+- Improve UI Layout for create
+- Owner column for Game
+- Owners can delete games
+- Owners can change due dates
+- Join Rank UI
+- Game popup should show details depending on the game state
+- Submission UI for games
+- Sort games by closest dueDate
+- Indicator for whether you have submitted yet
+- Game Owner insights 
+- - What users have joined the game
+- - Have they submitted, have they ranked
+- rank UI for games
+- completed UI for games
+- Calculations for completed stats
+- Show who submitted what at end of game
+- Allow editing of the 
+
+
+Stretch
+- make popups mobile friendly
+- user stats 
+- change profile picture
+- Set max number of players during create rank

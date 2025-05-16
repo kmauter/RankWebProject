@@ -416,15 +416,17 @@ code {
   }
 }
 
-.game-popup {
+.main-popup {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 500px;
-  height: 450px; /* Adjust height as needed */
-  padding: 20px;
-  background-image: url('../assets/Sticky1.png');
+  width: 80vw;
+  max-width: 800px;
+  height: auto;
+  max-height: 90vh;
+  aspect-ratio: 34 / 23;
+  background-image: url('../assets/CrumpledPopupShadow.png');
   background-size: contain; /* Ensure the image fits within the container */
   background-position: center; /* Center the image */
   background-repeat: no-repeat; /* Prevent tiling */
@@ -432,4 +434,48 @@ code {
   font-family: 'HandFont', sans-serif; /* Use the custom font */
   display: flex; /* Optional: Flexbox for centering content inside */
   flex-direction: column; /* Stack content vertically */
+  box-sizing: border-box;
+  padding: 70px; /* Add padding for inner content */
+  overflow: auto;
+  font-size: 1.6rem; /* Adjust font size as needed */
+}
+
+.create-rank-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-size: 1.6rem;
+}
+
+.main-popup h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.close-button {
+  position: absolute;
+  top: 70px;
+  right: 90px;
+  font-size: 3rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .main-popup {
+    padding: 7%;
+    font-size: 1.3rem;
+  }
+  .create-rank-form label {
+    font-size: 1.3rem;
+  }
+  .main-popup h2 {
+    font-size: 1.7rem;
+  }
+  .close-button {
+    font-size: 2.5rem;
+    top: 10%;
+    right: 10%;
+  }
 }

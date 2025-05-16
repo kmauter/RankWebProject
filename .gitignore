@@ -39,3 +39,4 @@ yarn-error.log*
 *.pyc
 app/config.py
 /app/__pycache__
+/app/__pycache__
