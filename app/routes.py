@@ -140,7 +140,8 @@ def get_user_games():
                 'id': game.id,
                 'title': game.theme,
                 'status': game.stage.value,  # Convert Enum to string
-                'dueDate': game.rank_duedate.strftime('%Y-%m-%d')  # Format date as string
+                'dueDate': game.rank_duedate.strftime('%Y-%m-%d'),  # Format date as string
+                'gameCode': game.game_code
             }
             for game in games
         ]

@@ -77,6 +77,7 @@ function Dashboard() {
 
             if (response.ok) {
                 const data = await response.json();
+                console.log('Fetched games:', data); // Log the fetched games for debugging
                 setGamePreviews(data); // Update the state with the fetched games
             } else {
                 console.error('Failed to fetch games');
@@ -176,6 +177,7 @@ function Dashboard() {
                     <h2>{selectedGame.title}</h2>
                     <p>Status: {selectedGame.status}</p>
                     <p>Due Date: {selectedGame.dueDate}</p>
+                    <p>Game Code: {selectedGame.gameCode}</p>
                     <p className='close-popup' onClick={closeGamePopup}>
                         Close
                     </p>
