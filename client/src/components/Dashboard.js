@@ -2,6 +2,8 @@ import React, { useState, useContext, useEffect } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import GamePreview from './GamePreview';
+import CreateRankPopup from './CreateRankPopup';
+import JoinRankPopup from './JoinRankPopup';
 import { UserContext } from '../contexts/UserContext';
 
 function Dashboard() {
@@ -93,9 +95,11 @@ function Dashboard() {
 
     const handleCreateGame = async (theme, submissionDuedate, rankDuedate) => {
         try {
+            const token = localStorage.getItem('authToken'); // Get the JWT token from localStorage
             const response = await fetch('/api/games', {
                 method: 'POST',
                 headers: {
+                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
@@ -118,6 +122,31 @@ function Dashboard() {
             console.error('Error creating game:', error);
         }
     };
+
+    const handleJoinGame = async (gameCode) => {
+        try {
+            const token = localStorage.getItem('authToken'); // Get the JWT token from localStorage
+            const response = await fetch('/api/join-game', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    game_code: gameCode,
+                }),
+            });
+    
+            if (response.ok) {
+                console.log('Successfully joined the game');
+                fetchGames(); // Refresh the game previews after joining a new game
+            } else {
+                console.error('Failed to join game');
+            }
+        } catch (error) {
+            console.error('Error joining game:', error);
+        }
+    }
 
     return (
         <div className="dashboard">
@@ -184,54 +213,22 @@ function Dashboard() {
                 </div>
             )}
             {isJoinRankPopupVisible && (
-                <div className="main-popup">
-                    <h2>Join a Rank</h2>
-                    <p>Oops! This isn't ready yet.</p>
-                    <p className='close-popup' onClick={() => setJoinRankPopupVisible(false)}>
-                        Close
-                    </p>
-                </div>
+                <JoinRankPopup
+                    onClose={() => {
+                        setJoinRankPopupVisible(false);
+                    }}
+                    onJoin={handleJoinGame} // Pass the join function to the popup
+                />
             )}
             {isCreateRankPopupVisible && (
-                <div className="main-popup">
-                    <h1
-                        className='close-button'
-                        onClick={() => {
-                            setCreateRankPopupVisible(false);
-                            setCreatedGameCode(null); 
-                        }}
-                    >X</h1>
-                    <h2>Create a Rank</h2>
-                    <form
-                        className="create-rank-form"
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            const theme = e.target.theme.value;
-                            const submissionDuedate = e.target.submissionDuedate.value;
-                            const rankDuedate = e.target.rankDuedate.value;
-                            handleCreateGame(theme, submissionDuedate, rankDuedate);
-                        }}
-                    >
-                        <label>
-                            Theme:  
-                            <input type="text" name="theme" required />
-                        </label>
-                        <label>
-                            Submission Due Date:  
-                            <input type="date" name="submissionDuedate" required />
-                        </label>
-                        <label>
-                            Rank Due Date:  
-                            <input type="date" name="rankDuedate" required />
-                        </label>
-                        <button type="submit">Create Game</button>
-                    </form>
-                    {createdGameCode && (
-                        <p>
-                            Game created successfully! Your game code is: {createdGameCode}
-                        </p>
-                    )}
-                </div>
+                <CreateRankPopup
+                    onClose={() => {
+                        setCreateRankPopupVisible(false);
+                        setCreatedGameCode(null);
+                    }}
+                    onCreate={handleCreateGame}
+                    createdGameCode={createdGameCode}
+                />
             )}
             <Footer
                 onJoinClick={() => handleJoinClick()}

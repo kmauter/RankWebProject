@@ -75,49 +75,89 @@ def get_user_profile():
     
 @app.route('/api/games', methods=['POST'])
 def create_game():
-    data = request.get_json()
-    theme = data.get('theme')
-    submission_duedate = data.get('submissionDuedate')
-    rank_duedate = data.get('rankDuedate')
-
-    if not theme or not submission_duedate or not rank_duedate:
-        return jsonify({'error': 'Missing required fields'}), 400
-    
+    token = request.headers.get('Authorization').split(" ")[1]
     try:
-        submission_duedate = datetime.strptime(submission_duedate, '%Y-%m-%d').date()
-        rank_duedate = datetime.strptime(rank_duedate, '%Y-%m-%d').date()
-    except ValueError:
-        return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD.'}), 400
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        user_id = decoded['user_id']
+    
+        data = request.get_json()
+        theme = data.get('theme')
+        submission_duedate = data.get('submissionDuedate')
+        rank_duedate = data.get('rankDuedate')
 
-    # Generate a unique game code
-    game_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        if not theme or not submission_duedate or not rank_duedate:
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        try:
+            submission_duedate = datetime.strptime(submission_duedate, '%Y-%m-%d').date()
+            rank_duedate = datetime.strptime(rank_duedate, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD.'}), 400
 
-    # Get the current user (assuming you have a way to get the logged-in user)
-    current_user = User.query.filter_by(id=1).first()  # Replace with actual user retrieval logic
+        # Generate a unique game code
+        game_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
-    if not current_user:
-        return jsonify({'error': 'User not found'}), 404
+        if not user_id:
+            return jsonify({'error': 'User not found'}), 404
 
-    # Create the game
-    new_game = Game(
-        theme=theme,
-        stage=Stage.SUBMIT,
-        submission_duedate=submission_duedate,
-        rank_duedate=rank_duedate,
-        game_code=game_code,
-    )
-    db.session.add(new_game)
-    db.session.commit()
+        # Create the game
+        new_game = Game(
+            theme=theme,
+            stage=Stage.SUBMIT,
+            submission_duedate=submission_duedate,
+            rank_duedate=rank_duedate,
+            game_code=game_code,
+        )
+        db.session.add(new_game)
+        db.session.commit()
 
-    # Add the user to the game
-    game_user = GameUser(game_id=new_game.id, user_id=current_user.id)
-    db.session.add(game_user)
-    db.session.commit()
+        # Add the user to the game
+        game_user = GameUser(game_id=new_game.id, user_id=user_id)
+        db.session.add(game_user)
+        db.session.commit()
 
-    return jsonify({
-        'message': 'Game created successfully',
-        'game_code': game_code,
-    }), 201
+        return jsonify({
+            'message': 'Game created successfully',
+            'game_code': game_code,
+        }), 201
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception as e:
+        return jsonify({'error': 'Invalid token'}), 401
+    
+@app.route('/api/join-game', methods=['POST'])
+def join_game():
+    token = request.headers.get('Authorization').split(" ")[1]
+    try:
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        user_id = decoded['user_id']
+        
+        data = request.get_json()
+        game_code = data.get('game_code')
+        
+        if not game_code:
+            return jsonify({'error': 'Missing game code'}), 400
+        
+        # Find the game by game code
+        game = Game.query.filter_by(game_code=game_code).first()
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+        
+        # Check if the user is already part of the game
+        existing_entry = GameUser.query.filter_by(game_id=game.id, user_id=user_id).first()
+        if existing_entry:
+            return jsonify({'error': 'User already part of the game'}), 400
+        
+        # Add the user to the game
+        game_user = GameUser(game_id=game.id, user_id=user_id)
+        db.session.add(game_user)
+        
+        db.session.commit()
+        return jsonify({'message': 'User added to game successfully'}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception as e:
+        return jsonify({'error': 'Invalid token'}), 401
     
 @app.route('/api/user-games', methods=['GET'])
 def get_user_games():

@@ -1,11 +1,9 @@
 
 MVP
 
-- Improve UI Layout for create
 - Owner column for Game
 - Owners can delete games
 - Owners can change due dates
-- Join Rank UI
 - Game popup should show details depending on the game state
 - Submission UI for games
 - Sort games by closest dueDate
