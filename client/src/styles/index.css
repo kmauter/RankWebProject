@@ -479,3 +479,19 @@ code {
     right: 10%;
   }
 }
+
+.game-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* space between title and code */
+    margin-bottom: -1.3rem;
+}
+
+.game-code {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.popup-due-date {
+  font-weight: bold;
+}

@@ -148,6 +148,33 @@ function Dashboard() {
         }
     }
 
+    const handleSongSubmission = async (songName, songArtist, songComment) => {
+        try {
+            const token = localStorage.getItem('authToken')
+            const response = await fetch('/api/submit-song', {
+                method: 'POST',
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": 'application/json',
+                },
+                body: JSON.stringify({
+                    game_code: selectedGame.gameCode,
+                    song_name: songName,
+                    artist: songArtist,
+                    comment: songComment,
+                }),
+            });
+            if (response.ok) {
+                console.log('Song submitted successfully');
+                // clear text boxes
+            } else {
+                console.error('Failed to submit song');
+            }
+        } catch (error) {
+            console.error('Error submitting song:', error);
+        }
+    }
+
     return (
         <div className="dashboard">
             <Header onUserIconClick={() => handleUserIconClick()} />
@@ -203,13 +230,45 @@ function Dashboard() {
             </main>
             {isGamePopupVisible && selectedGame && (
                 <div className="main-popup">
-                    <h2>{selectedGame.title}</h2>
+                    <h1
+                        className='close-button'
+                        onClick={() => {
+                            closeGamePopup();
+                        }}
+                    >X</h1>
+                    <div className="game-title-row">
+                        <h2>{selectedGame.title}</h2>
+                        <span className='game-code'>({selectedGame.gameCode})</span>
+                    </div>
+                    <p className='popup-due-date'>Due {selectedGame.dueDate}</p>
+                    <form
+                        className='submit-song-form'
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            const songName = e.target.songName.value;
+                            const songArtist = e.target.songArtist.value;
+                            const songComment = e.target.songComment.value;
+                            handleSongSubmission(songName, songArtist, songComment);
+                        }}
+                    >
+                        <label>
+                            Song Name:
+                            <input type="text" name="songName" required />
+                        </label>
+                        <label>
+                            Artist: 
+                            <input type="text" name="songArtist" required />
+                        </label>
+                        <label htmlFor='songComment'>Comments:</label>
+                        <textarea
+                            id="songComment"
+                            name="songComment"
+                            rows={2}
+                            style={{ width: '100%', resize: 'vertical' }}
+                        />
+                        <button type="submit">Submit Song</button>
+                    </form>
                     <p>Status: {selectedGame.status}</p>
-                    <p>Due Date: {selectedGame.dueDate}</p>
-                    <p>Game Code: {selectedGame.gameCode}</p>
-                    <p className='close-popup' onClick={closeGamePopup}>
-                        Close
-                    </p>
                 </div>
             )}
             {isJoinRankPopupVisible && (

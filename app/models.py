@@ -28,6 +28,7 @@ class Game(db.Model):
     __tablename__ = 'Game'
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('User.id'), nullable=False)
     theme = db.Column(db.String, nullable=False)
     stage = db.Column(db.Enum(Stage), nullable=False)
     submission_duedate = db.Column(db.Date, nullable=False)
@@ -37,6 +38,8 @@ class Game(db.Model):
     __table_args__ = (
         db.UniqueConstraint('game_code', name='uq_game_code'),  # Explicitly define the unique constraint name
     )
+    
+    owner = db.relationship('User', backref='games')  # Link to User
 
     def __repr__(self):
         return '<Game {}>'.format(self.theme)

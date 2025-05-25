@@ -71,7 +71,7 @@ def get_user_profile():
     except jwt.ExpiredSignatureError:
         return jsonify({'message': 'Token has expired'}), 401
     except Exception as e:
-        return jsonify({'message': 'Invalid token'}), 401
+        return jsonify({'error': f'{e}'}), 401
     
 @app.route('/api/games', methods=['POST'])
 def create_game():
@@ -107,6 +107,7 @@ def create_game():
             submission_duedate=submission_duedate,
             rank_duedate=rank_duedate,
             game_code=game_code,
+            owner_id=user_id
         )
         db.session.add(new_game)
         db.session.commit()
@@ -123,7 +124,7 @@ def create_game():
     except jwt.ExpiredSignatureError:
         return jsonify({'error': 'Token has expired'}), 401
     except Exception as e:
-        return jsonify({'error': 'Invalid token'}), 401
+        return jsonify({'error': f'{e}'}), 401
     
 @app.route('/api/join-game', methods=['POST'])
 def join_game():
@@ -157,7 +158,7 @@ def join_game():
     except jwt.ExpiredSignatureError:
         return jsonify({'error': 'Token has expired'}), 401
     except Exception as e:
-        return jsonify({'error': 'Invalid token'}), 401
+        return jsonify({'error': f'{e}'}), 401
     
 @app.route('/api/user-games', methods=['GET'])
 def get_user_games():
@@ -190,4 +191,111 @@ def get_user_games():
     except jwt.ExpiredSignatureError:
         return jsonify({'error': 'Token has expired'}), 401
     except Exception as e:
-        return jsonify({'error': 'Invalid token'}), 401
+        return jsonify({'error': f'{e}'}), 401
+    
+@app.route('/api/submit-song', methods=["POST"])
+def submit_song_to_game():
+    token = request.headers.get('Authorization').split(" ")[1] # Extract token from "Bearer <token>"
+    try:
+        # Decode the JWT token to get the user ID
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        user_id = decoded['user_id']
+        
+        data = request.get_json()
+        game_code = data.get('game_code')
+        title = data.get('song_name')
+        artist = data.get('artist')
+        comment = data.get('comment')
+        
+        if not game_code or not title or not artist:
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        # Find the game by game code
+        game = Game.query.filter_by(game_code=game_code).first()
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+        
+        # Check if the game is in the submission stage
+        if game.stage != Stage.SUBMIT:
+            return jsonify({'error': 'Game is not in the submission stage'}), 400
+        
+        # Check if the user is part of the game
+        game_user = GameUser.query.filter_by(game_id=game.id, user_id=user_id).first()
+        if not game_user:
+            return jsonify({'error': 'User is not part of the game'}), 403
+        
+        # Check if the song already exists for this game
+        existing_song = Song.query.filter_by(game_id=game.id, user_id=user_id, title=title, artist=artist).first()
+        if existing_song:
+            return jsonify({'error': 'Song already submitted for this game'}), 400
+        
+        # Create a new song entry
+        song_entry = Song(
+            game_id=game.id,
+            user_id=user_id,
+            title=title,
+            artist=artist,
+            comment=comment
+        )
+        db.session.add(song_entry)
+        db.session.commit()
+        # return the song entry
+        return jsonify({
+            'message': 'Song submitted successfully',
+            'song': {
+                'id': song_entry.id,
+                'song_name': song_entry.title,
+                'artist': song_entry.artist,
+                'comment': song_entry.comment
+            }
+        }), 201
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception as e:
+        return jsonify({'error': f'{e}'}), 401
+    
+@app.route('/api/game-songs', methods=["GET"])
+def get_game_songs():
+    token = request.headers.get('Authorization').split(" ")[1]
+    try:
+        # Decode the JWT token to get the user ID
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        user_id = decoded['user_id']
+        
+        data = request.get_json()
+        game_code = data.get('game_code')
+        
+        if not game_code:
+            return jsonify({'error': 'Missing game code'}), 400
+        
+        # Find the game by game code
+        game = Game.query.filter_by(game_code=game_code).first()
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+        
+        # Check if the user is part of the game
+        game_user = GameUser.query.filter_by(game_id=game.id, user_id=user_id).first()
+        if not game_user:
+            return jsonify({'error': 'User is not part of the game'}), 403
+        
+        # Get all songs for this game
+        songs = Song.query.filter_by(game_id=game.id).all()
+        
+        # Serialize the song data
+        song_data = [
+            {
+                'id': song.id,
+                'song_name': song.title,
+                'artist': song.artist,
+                'comment': song.comment,
+                'spotify_link': song.spotify_link,
+                'youtube_link': song.youtube_link
+            }
+            for song in songs
+        ]
+        
+        return jsonify(song_data), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception as e:
+        return jsonify({'error': f'{e}'}), 401
