@@ -1,7 +1,7 @@
 
 MVP
 
-- Owner column for Game
+X Owner column for Game
 - Owners can delete games
 - Owners can change due dates
 - Game popup should show details depending on the game state
@@ -23,3 +23,4 @@ Stretch
 - user stats 
 - change profile picture
 - Set max number of players during create rank
+- Improve popup UI to just use dashboard-main. I think this would look much much cleaner.

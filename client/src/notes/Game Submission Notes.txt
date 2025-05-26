@@ -1,5 +1,5 @@
 During Submission Stage
-- Player can submit a song
+X Player can submit a song
 - Player can delete a submitted song
 - Player can see their submitted songs
 - Player cannot submit more than a designated number of songs

@@ -4,6 +4,7 @@ import Footer from './Footer';
 import GamePreview from './GamePreview';
 import CreateRankPopup from './CreateRankPopup';
 import JoinRankPopup from './JoinRankPopup';
+import GamePopup from './GamePopup';
 import { UserContext } from '../contexts/UserContext';
 
 function Dashboard() {
@@ -229,47 +230,15 @@ function Dashboard() {
                 </div>
             </main>
             {isGamePopupVisible && selectedGame && (
-                <div className="main-popup">
-                    <h1
-                        className='close-button'
-                        onClick={() => {
-                            closeGamePopup();
-                        }}
-                    >X</h1>
-                    <div className="game-title-row">
-                        <h2>{selectedGame.title}</h2>
-                        <span className='game-code'>({selectedGame.gameCode})</span>
-                    </div>
-                    <p className='popup-due-date'>Due {selectedGame.dueDate}</p>
-                    <form
-                        className='submit-song-form'
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            const songName = e.target.songName.value;
-                            const songArtist = e.target.songArtist.value;
-                            const songComment = e.target.songComment.value;
-                            handleSongSubmission(songName, songArtist, songComment);
-                        }}
-                    >
-                        <label>
-                            Song Name:
-                            <input type="text" name="songName" required />
-                        </label>
-                        <label>
-                            Artist: 
-                            <input type="text" name="songArtist" required />
-                        </label>
-                        <label htmlFor='songComment'>Comments:</label>
-                        <textarea
-                            id="songComment"
-                            name="songComment"
-                            rows={2}
-                            style={{ width: '100%', resize: 'vertical' }}
-                        />
-                        <button type="submit">Submit Song</button>
-                    </form>
-                    <p>Status: {selectedGame.status}</p>
-                </div>
+                <GamePopup
+                    onClose={() => {
+                        closeGamePopup();
+                    }}
+                    onSongSubmit={handleSongSubmission} // Pass the song submission function to the popup
+                    selectedGame={selectedGame}
+                    currentUserId={user.id}
+                    ownerId={selectedGame.ownerId}
+                />
             )}
             {isJoinRankPopupVisible && (
                 <JoinRankPopup
