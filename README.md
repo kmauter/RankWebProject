@@ -101,6 +101,8 @@ ALSO
 - [ ] Modify game creation UI to match main-content format
 - [ ] Modify game joining UI to match main-content format
 
+### Goal POC Date: 8/1
+
 # Deployment Notes
 
 - If using a production WSGI server (e.g., Gunicorn), ensure the background scheduler in `app/tasks.py` runs only once (not per worker process). Consider running it as a separate service in production.
