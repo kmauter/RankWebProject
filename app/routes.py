@@ -8,6 +8,11 @@ import random
 import string
 from app.config import SECRET_KEY
 
+def get_user_id_from_token():
+    token = request.headers.get('Authorization').split(" ")[1]
+    decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+    return decoded['user_id']
+
 @app.route('/')
 def index():
     return "Hello, World!"
@@ -61,10 +66,9 @@ def login():
     
 @app.route('/api/user-profile', methods=['GET'])
 def get_user_profile():
-    token = request.headers.get('Authorization').split(" ")[1]  # Extract token from "Bearer <token>"
     try:
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        user = User.query.get(decoded['user_id'])
+        user_id = get_user_id_from_token()
+        user = User.query.get(user_id)
         if not user:
             return jsonify({'message': 'User not found'}), 404
         return jsonify({'username': user.username, 'email': user.email})
@@ -75,15 +79,14 @@ def get_user_profile():
     
 @app.route('/api/games', methods=['POST'])
 def create_game():
-    token = request.headers.get('Authorization').split(" ")[1]
     try:
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        user_id = decoded['user_id']
+        user_id = get_user_id_from_token()
     
         data = request.get_json()
         theme = data.get('theme')
         submission_duedate = data.get('submissionDuedate')
         rank_duedate = data.get('rankDuedate')
+        max_submissions_per_user = data.get('maxSubmissionsPerUser', 2)
 
         if not theme or not submission_duedate or not rank_duedate:
             return jsonify({'error': 'Missing required fields'}), 400
@@ -107,7 +110,8 @@ def create_game():
             submission_duedate=submission_duedate,
             rank_duedate=rank_duedate,
             game_code=game_code,
-            owner_id=user_id
+            owner_id=user_id,
+            max_submissions_per_user=2  # Default value, can be changed later
         )
         db.session.add(new_game)
         db.session.commit()
@@ -128,10 +132,8 @@ def create_game():
     
 @app.route('/api/join-game', methods=['POST'])
 def join_game():
-    token = request.headers.get('Authorization').split(" ")[1]
     try:
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        user_id = decoded['user_id']
+        user_id = get_user_id_from_token()
         
         data = request.get_json()
         game_code = data.get('game_code')
@@ -162,11 +164,8 @@ def join_game():
     
 @app.route('/api/user-games', methods=['GET'])
 def get_user_games():
-    token = request.headers.get('Authorization').split(" ")[1] # Extract token from "Bearer <token>"
     try:
-        # Decode the JWT token to get the user ID
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        user_id = decoded['user_id']
+        user_id = get_user_id_from_token()
 
         # Query the GameUser table to find games the user is part of
         game_user_entries = GameUser.query.filter_by(user_id=user_id).all()
@@ -181,8 +180,14 @@ def get_user_games():
                 'id': game.id,
                 'title': game.theme,
                 'status': game.stage.value,  # Convert Enum to string
-                'dueDate': game.rank_duedate.strftime('%Y-%m-%d'),  # Format date as string
-                'gameCode': game.game_code
+                'submissionDueDate': game.submission_duedate.strftime('%Y-%m-%d'),  # Format date as string
+                'rankDueDate': game.rank_duedate.strftime('%Y-%m-%d'),  # Format date as string
+                'gameCode': game.game_code,
+                'maxSubmissionsPerUser': game.max_submissions_per_user,
+                'owner': {
+                    'id': game.owner_id,
+                    'username': User.query.get(game.owner_id).username if game.owner_id else None
+                }
             }
             for game in games
         ]
@@ -195,11 +200,8 @@ def get_user_games():
     
 @app.route('/api/submit-song', methods=["POST"])
 def submit_song_to_game():
-    token = request.headers.get('Authorization').split(" ")[1] # Extract token from "Bearer <token>"
     try:
-        # Decode the JWT token to get the user ID
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        user_id = decoded['user_id']
+        user_id = get_user_id_from_token()
         
         data = request.get_json()
         game_code = data.get('game_code')
@@ -229,6 +231,11 @@ def submit_song_to_game():
         if existing_song:
             return jsonify({'error': 'Song already submitted for this game'}), 400
         
+        # Count user's submissions for this game
+        user_song_count = Song.query.filter_by(game_id=game.id, user_id=user_id).count()
+        if user_song_count >= game.max_submissions_per_user:
+            return jsonify({'error': f'Maximum of {game.max_submissions_per_user} submission(s) reached for this game.'}), 400
+        
         # Create a new song entry
         song_entry = Song(
             game_id=game.id,
@@ -254,21 +261,116 @@ def submit_song_to_game():
     except Exception as e:
         return jsonify({'error': f'{e}'}), 401
     
-@app.route('/api/game-songs', methods=["GET"])
-def get_game_songs():
-    token = request.headers.get('Authorization').split(" ")[1]
+@app.route('/api/my-game-songs', methods=["GET"])
+def get_my_songs_for_game():
     try:
-        # Decode the JWT token to get the user ID
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        user_id = decoded['user_id']
+        user_id = get_user_id_from_token()
         
-        data = request.get_json()
-        game_code = data.get('game_code')
-        
+        game_code = request.args.get('game_code')
         if not game_code:
             return jsonify({'error': 'Missing game code'}), 400
         
         # Find the game by game code
+        game = Game.query.filter_by(game_code=game_code).first()
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+        
+        # Check if the user is part of the game
+        game_user = GameUser.query.filter_by(game_id=game.id, user_id=user_id).first()
+        if not game_user:
+            return jsonify({'error': 'User is not part of the game'}), 403
+        
+        # Get all songs submitted by the user for this game
+        songs = Song.query.filter_by(game_id=game.id, user_id=user_id).all()
+        
+        song_data = [
+            {
+                'id': song.id,
+                'song_name': song.title,
+                'artist': song.artist,
+                'comment': song.comment,
+                'spotify_link': song.spotify_link,
+                'youtube_link': song.youtube_link
+            }
+            for song in songs
+        ]
+        
+        return jsonify(song_data), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception as e:
+        return jsonify({'error': f'{e}'}), 401
+    
+@app.route('/api/game/<game_code>/update-game', methods=["PATCH"])
+def update_game(game_code):
+    try: 
+        user_id = get_user_id_from_token()
+        data = request.get_json()
+        
+        new_submission_duedate = data.get('submissionDuedate')
+        new_rank_duedate = data.get('rankDuedate')
+        
+        if not new_submission_duedate and not new_rank_duedate:
+            return jsonify({'error': 'Nothing to update.'}), 400
+        
+        game = Game.query.filter_by(game_code=game_code).first()
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+        
+        if game.owner_id != user_id:
+            return jsonify({'error': 'Only the game owner can update the game.'}), 403
+        
+        if new_submission_duedate:
+            game.submission_duedate = datetime.strptime(new_submission_duedate, '%Y-%m-%d').date()
+            
+        if new_rank_duedate:
+            game.rank_duedate = datetime.strptime(new_rank_duedate, '%Y-%m-%d').date()
+        db.session.commit()
+        return jsonify({'message': 'Game updated successfully'}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception as e:
+        return jsonify({'error': f'{e}'}), 401
+    
+@app.route('/api/game/<game_code>', methods=["GET"])
+def get_game_details(game_code):
+    try:
+        user_id = get_user_id_from_token()
+        
+        game = Game.query.filter_by(game_code=game_code).first()
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+        
+        # Check if the user is part of the game
+        game_user = GameUser.query.filter_by(game_id=game.id, user_id=user_id).first()
+        if not game_user:
+            return jsonify({'error': 'User is not part of the game'}), 403
+        
+        # Serialize the game data
+        game_data = {
+            'id': game.id,
+            'title': game.theme,
+            'status': game.stage.value,  # Convert Enum to string
+            'submissionDueDate': game.submission_duedate.strftime('%Y-%m-%d'),  # Format date as string
+            'rankDueDate': game.rank_duedate.strftime('%Y-%m-%d'),  # Format date as string
+            'gameCode': game.game_code,
+            'owner': {
+                'id': game.owner_id,
+                'username': User.query.get(game.owner_id).username if game.owner_id else None
+            }
+        }
+        
+        return jsonify(game_data), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception as e:
+        return jsonify({'error': f'{e}'}), 401
+    
+@app.route('/api/game/<game_code>/songs', methods=["GET"])
+def get_game_songs_details(game_code):
+    try:
+        user_id = get_user_id_from_token()
+        
         game = Game.query.filter_by(game_code=game_code).first()
         if not game:
             return jsonify({'error': 'Game not found'}), 404
@@ -289,12 +391,86 @@ def get_game_songs():
                 'artist': song.artist,
                 'comment': song.comment,
                 'spotify_link': song.spotify_link,
-                'youtube_link': song.youtube_link
+                'youtube_link': song.youtube_link,
+                'user': {
+                    'id': song.user_id,
+                    'username': User.query.get(song.user_id).username if song.user_id else None
+                }
             }
             for song in songs
         ]
         
         return jsonify(song_data), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception as e:
+        return jsonify({'error': f'{e}'}), 401
+    
+@app.route('/api/song/<int:song_id>', methods=["DELETE"])
+def delete_song(song_id):
+    try:
+        user_id = get_user_id_from_token()
+        song = Song.query.get(song_id)
+        if not song:
+            return jsonify({'error': 'Song not found'}), 404
+        
+        game = Game.query.get(song.game_id)
+        if not game or game.owner_id != user_id:
+            return jsonify({'error': 'Only the game owner can delete songs.'}), 403
+        
+        db.session.delete(song)
+        db.session.commit()
+        return jsonify({'message': 'Song deleted successfully'}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception as e:
+        return jsonify({'error': f'{e}'}), 401
+    
+@app.route('/api/game/<game_code>/players', methods=['GET'])
+def get_game_players(game_code):
+    try:
+        user_id = get_user_id_from_token()
+        game = Game.query.filter_by(game_code=game_code).first()
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+        
+        game_user = GameUser.query.filter_by(game_id=game.id, user_id=user_id).first()
+        if not game_user:
+            return jsonify({'error': 'User is not part of the game'}), 403
+        
+        players = GameUser.query.filter_by(game_id=game.id).all()
+        player_data = [
+            {
+                'id': player.user_id,
+                'username': User.query.get(player.user_id).username if player.user_id else None
+            }
+            for player in players
+        ]
+        return jsonify(player_data), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception as e:
+        return jsonify({'error': f'{e}'}), 401
+    
+@app.route('/api/game/<game_code>/player/<int:remove_user_id>', methods=['DELETE'])
+def remove_player_from_game(game_code, remove_user_id):
+    try:
+        user_id = get_user_id_from_token()
+        game = Game.query.filter_by(game_code=game_code).first()
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+        
+        if game.owner_id != user_id:
+            return jsonify({'error': 'Only the game owner can remove players.'}), 403
+        
+        game_user = GameUser.query.filter_by(game_id=game.id, user_id=remove_user_id).first()
+        if not game_user:
+            return jsonify({'error': 'Player not found in this game'}), 404
+        
+        db.session.delete(game_user)
+        db.session.commit()
+        
+        return jsonify({'message': 'Player removed successfully'}), 200
     except jwt.ExpiredSignatureError:
         return jsonify({'error': 'Token has expired'}), 401
     except Exception as e:

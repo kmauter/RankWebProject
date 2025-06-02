@@ -4,18 +4,24 @@ import Footer from './Footer';
 import GamePreview from './GamePreview';
 import CreateRankPopup from './CreateRankPopup';
 import JoinRankPopup from './JoinRankPopup';
-import GamePopup from './GamePopup';
+import GameDetails from './GameDetails';
 import { UserContext } from '../contexts/UserContext';
+import GameSettings from './GameSettings';
 
 function Dashboard() {
     const [isUserMenuVisible, setUserMenuVisible] = useState(false);
     const [isSettingsPopupVisible, setSettingsPopupVisible] = useState(false);
-    const [isGamePopupVisible, setGamePopupVisible] = useState(false);
     const [selectedGame, setSelectedGame] = useState(null);
     const [isJoinRankPopupVisible, setJoinRankPopupVisible] = useState(false);
     const [isCreateRankPopupVisible, setCreateRankPopupVisible] = useState(false);
     const [createdGameCode, setCreatedGameCode] = useState(null); // State to hold the created game code
     const [gamePreviews, setGamePreviews] = useState([]); // State to hold game previews
+    const [showGameSettings, setShowGameSettings] = useState(false); // State to control game settings visibility
+    const [songs, setSongs] = useState([]); // State to hold songs for the selected game
+    const [players, setPlayers] = useState([]); // State to hold players for the selected game
+    const [submissionDueDate, setSubmissionDueDate] = useState('');
+    const [rankDueDate, setRankDueDate] = useState('');
+    const [userSongs, setUserSongs] = useState([]);
 
     const { user, logout } = useContext(UserContext); // Assuming you have a UserContext to get user info
 
@@ -40,13 +46,6 @@ function Dashboard() {
     const handleGameClick = (game) => {
         console.log('Game clicked:', game);
         setSelectedGame(game);
-        setGamePopupVisible(true);
-    };
-
-    const closeGamePopup = () => {
-        console.log('Game popup closed!');
-        setGamePopupVisible(false);
-        setSelectedGame(null);
     };
 
     const handleLogout = () => {
@@ -84,15 +83,127 @@ function Dashboard() {
                 setGamePreviews(data); // Update the state with the fetched games
             } else {
                 console.error('Failed to fetch games');
+                window.location.href = '/';
             }
         } catch (error) {
             console.error('Error fetching games:', error);
         }
     };
 
+    const fetchUserSongs = async (gameCode) => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`/api/my-game-songs?game_code=${encodeURIComponent(gameCode)}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setUserSongs(data);
+            } else {
+                setUserSongs([]);
+            }
+        } catch (error) {
+            console.error('Error fetching user songs:', error);
+            setUserSongs([]);
+        }
+    };
+
+    const fetchGameDetails = async (gameCode) => {
+        try {
+            const token = localStorage.getItem('authToken'); // Get the JWT token from localStorage
+            const response = await fetch(`/api/game/${encodeURIComponent(gameCode)}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Fetched game details:', data); // Log the fetched game details for debugging
+                setSelectedGame(data); // Update the state with the fetched game details
+                setSubmissionDueDate(data.submissionDueDate);
+                setRankDueDate(data.rankDueDate);
+            } else {
+                console.error('Failed to fetch game details');
+                setSelectedGame(null); // Reset selected game if fetching fails
+            }
+        } catch (error) {
+            console.error('Error fetching game details:', error);
+            setSelectedGame(null); // Reset selected game if fetching fails
+        }
+    };
+
+    const fetchSongs = async (gameCode) => {
+        try {
+            const token = localStorage.getItem('authToken'); // Get the JWT token from localStorage
+            const response = await fetch(`/api/game/${encodeURIComponent(gameCode)}/songs`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setSongs(data); // Update the state with the fetched songs
+            } else {
+                console.error('Failed to fetch songs');
+                setSongs([]); // Optionally clear songs on failure
+            }
+        } catch (error) {
+            console.error('Error fetching songs:', error);
+            setSongs([]); // Optionally clear songs on error
+        }
+    };
+
+    const fetchPlayers = async (gameCode) => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`/api/game/${encodeURIComponent(gameCode)}/players`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setPlayers(data); // Update the state with the fetched players
+            } else {
+                console.error('Failed to fetch players');
+                setPlayers([]); // Optionally clear players on failure
+            }
+        } catch (error) {
+            console.error('Error fetching players:', error);
+            setPlayers([]); // Optionally clear players on error
+        }
+    };
+                            
     useEffect(() => {
         fetchGames();
     }, []); // Empty dependency array ensures this runs only once when the component mounts
+
+    useEffect(() => {
+        if (showGameSettings && selectedGame) {
+            // Fetch songs, players, and due dates for the selected game
+            fetchGameDetails(selectedGame.gameCode);
+            fetchSongs(selectedGame.gameCode);
+            fetchPlayers(selectedGame.gameCode);
+        }
+    }, [showGameSettings]);
+
+    useEffect(() => {
+        if (selectedGame && !showGameSettings && user) {
+            fetchUserSongs(selectedGame.gameCode);
+        }
+    }, [selectedGame, showGameSettings, user]);
 
     const handleCreateGame = async (theme, submissionDuedate, rankDuedate) => {
         try {
@@ -167,7 +278,9 @@ function Dashboard() {
             });
             if (response.ok) {
                 console.log('Song submitted successfully');
-                // clear text boxes
+                // refresh the songs list after submission
+                fetchSongs(selectedGame.gameCode);
+                fetchUserSongs(selectedGame.gameCode);
             } else {
                 console.error('Failed to submit song');
             }
@@ -175,6 +288,96 @@ function Dashboard() {
             console.error('Error submitting song:', error);
         }
     }
+
+    const handleDeleteSong = async (songId) => {
+        try {
+            const token = localStorage.getItem('authToken'); // Get the JWT token from localStorage
+            const response = await fetch(`/api/song/${songId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                console.log('Song deleted successfully');
+                // Optionally, refresh the songs list after deletion
+                fetchSongs(selectedGame.gameCode);
+                fetchUserSongs(selectedGame.gameCode);
+            } else {
+                console.error('Failed to delete song');
+            }
+        } catch (error) {
+            console.error('Error deleting song:', error);
+        }
+    }
+
+    const handleRemovePlayer = async (gameCode, playerId) => {
+        try {
+            const token = localStorage.getItem('authToken'); // Get the JWT token from localStorage
+            const response = await fetch(`/api/game/${encodeURIComponent(gameCode)}/player/${playerId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                console.log('Player removed successfully');
+                // Optionally, refresh the players list after removal
+                fetchPlayers(selectedGame.gameCode);
+            } else {
+                console.error('Failed to remove player');
+            }
+        } catch (error) {
+            console.error('Error removing player:', error);
+        }
+    }
+
+    const handleSaveSubmissionDueDate = async (newDate) => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`/api/game/${selectedGame.gameCode}/update-game`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ submissionDuedate: newDate }),
+            });
+            if (response.ok) {
+                // Optionally refetch game details or show a success message
+                fetchGameDetails(selectedGame.gameCode);
+            } else {
+                console.error('Failed to update submission due date');
+            }
+        } catch (error) {
+            console.error('Error updating submission due date:', error);
+        }
+    };
+
+    const handleSaveRankDueDate = async (newDate) => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`/api/game/${selectedGame.gameCode}/update-game`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ rankDuedate: newDate }),
+            });
+            if (response.ok) {
+                fetchGameDetails(selectedGame.gameCode);
+            } else {
+                console.error('Failed to update rank due date');
+            }
+        } catch (error) {
+            console.error('Error updating rank due date:', error);
+        }
+    };
 
     return (
         <div className="dashboard">
@@ -216,30 +419,57 @@ function Dashboard() {
                     className="corner-image bottom-right"
                 />
                 <div className="main-content">
-                    { /* Render game previews */ }
-                    {gamePreviews.map((game, index) => (
-                        <GamePreview
-                            key={index}
-                            title={game.title}
-                            status={game.status}
-                            image={game.image}
-                            dueDate={game.dueDate}
-                            onClick={() => handleGameClick(game)}
-                        />
-                    ))}
+                    {selectedGame ? (
+                        <div className="game-details-container">
+                            {showGameSettings ? (
+                                <GameSettings
+                                    game={selectedGame}
+                                    onGameSettingsClose={() => {
+                                        setSelectedGame(null);
+                                        setShowGameSettings(false);
+                                    }}
+                                    onBack={() => setShowGameSettings(false)}
+                                    submissionDueDate={submissionDueDate}
+                                    rankDueDate={rankDueDate}
+                                    onSubmissionDueDateChange={setSubmissionDueDate}
+                                    onRankDueDateChange={setRankDueDate}
+                                    onSaveSubmissionDueDate={handleSaveSubmissionDueDate}
+                                    onSaveRankDueDate={handleSaveRankDueDate}
+                                    songs={songs}
+                                    onDeleteSong={handleDeleteSong}
+                                    players={players}
+                                    onRemovePlayer={handleRemovePlayer}
+                                    ownerId={selectedGame.ownerId}
+                                />
+                            ) : (
+                                <GameDetails
+                                    game={selectedGame}
+                                    onBack={() => setSelectedGame(null)}
+                                    currentUser={user}
+                                    onSongSubmit={handleSongSubmission}
+                                    onNextPage={() => setShowGameSettings(true)}
+                                    userSongs={userSongs}
+                                    onDeleteSong={handleDeleteSong}
+                                />
+                            )}
+                        </div>
+                    ) : (
+                        <div className='game-previews-grid'>
+                            {gamePreviews.map((game, index) => (
+                                <GamePreview
+                                    key={index}
+                                    title={game.title}
+                                    status={game.status}
+                                    image={game.image}
+                                    submissionDueDate={game.submissionDueDate}
+                                    rankDueDate={game.rankDueDate}
+                                    onClick={() => handleGameClick(game)}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             </main>
-            {isGamePopupVisible && selectedGame && (
-                <GamePopup
-                    onClose={() => {
-                        closeGamePopup();
-                    }}
-                    onSongSubmit={handleSongSubmission} // Pass the song submission function to the popup
-                    selectedGame={selectedGame}
-                    currentUserId={user.id}
-                    ownerId={selectedGame.ownerId}
-                />
-            )}
             {isJoinRankPopupVisible && (
                 <JoinRankPopup
                     onClose={() => {

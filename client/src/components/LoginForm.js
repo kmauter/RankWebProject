@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { UserContext } from '../contexts/UserContext';
 
 import axios from 'axios';
 import { Form, Button } from 'react-bootstrap';
@@ -17,6 +18,7 @@ function LoginForm() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const { setUser } = useContext(UserContext); 
     const navigate = useNavigate();
 
     // Function to handle form submission
@@ -31,6 +33,7 @@ function LoginForm() {
             const token = response.data.token; // Assuming the token is returned in the response
             localStorage.setItem('authToken', token); // Store the token in local storage
             const user = jwtDecode(token); // Decode the token to get user info
+            setUser(user); // Set the user in context
             console.log("Logged in user: ", user); // Log the user info for debugging
             navigate('/dashboard'); // Handle successful login here (e.g., redirect to dashboard)
         })

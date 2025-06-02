@@ -20,9 +20,9 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
     
 class Stage(PyEnum):
-    SUBMIT = 'submit'
-    RANK = 'rank'
-    DONE = 'done'    
+    SUBMIT = 'submissions'
+    RANK = 'rankings'
+    DONE = 'results'    
     
 class Game(db.Model):
     __tablename__ = 'Game'
@@ -34,6 +34,7 @@ class Game(db.Model):
     submission_duedate = db.Column(db.Date, nullable=False)
     rank_duedate = db.Column(db.Date, nullable=False)
     game_code = db.Column(db.String, nullable=False)
+    max_submissions_per_user = db.Column(db.Integer, nullable=False, default=2)
     
     __table_args__ = (
         db.UniqueConstraint('game_code', name='uq_game_code'),  # Explicitly define the unique constraint name

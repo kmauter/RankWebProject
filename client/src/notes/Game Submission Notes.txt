@@ -1,18 +1,22 @@
 During Submission Stage
 X Player can submit a song
-- Player can delete a submitted song
-- Player can see their submitted songs
-- Player cannot submit more than a designated number of songs
-- Owner can do all things Player can do AND
-- Owner can see all songs submitted by any player in that game
-- Owner can delete any submitted song
-- Owner can NOT see who submitted what song
+X Player can delete a submitted song
+X Player can see their submitted songs
+X Player cannot submit more than a designated number of songs
+X Owner can do all things Player can do AND
+X Owner can see all songs submitted by any player in that game
+X Owner can delete any submitted song
+X Owner can NOT see who submitted what song
 - ALSO
-- Owner can change submission due date
-- Owner can change rank due date
-- Owner can delete the game
-- Owner can set playlist name
-- Owner can remove player from game
+X Owner can change submission due date
+X Owner can change rank due date
+X Owner can remove player from game
+
+Submission Bug Tracker
+X When submitting a song, the song list is not updated
+X When submitting a song, if it is successful, it should clear the fields
+X Fix formatting on settings page to emphasize headers
+X User should get some feedback when saving the changed dates.
 
 Automation Between
 - When submission due date is passed, trigger Automation
@@ -45,3 +49,10 @@ During Finished Stage
 - Display winner and winning song prominently!
 - Display all songs, avg ranking and controversy score, and who submitted what
 - Allow download for full data
+
+Stretch and QOL Features for Later
+- Game creation includes choosing the submission limit
+- Owner can delete the game
+- Owner can set playlist name
+- Modify game creation UI to match main-content format
+- Modify game joining UI to match main-content format

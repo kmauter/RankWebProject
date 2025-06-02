@@ -1,7 +1,9 @@
 import React from 'react';
 import '../styles/GamePreview.css';
 
-const GamePreview = ({ title, status, dueDate, onClick }) => {
+const GamePreview = ({ title, status, submissionDueDate, rankDueDate, onClick }) => {
+    console.log(`Rendering GamePreview for ${title} with status ${status}`);
+    
     const statusImage = () => {
         switch (status) {
             case 'submissions':
@@ -14,6 +16,16 @@ const GamePreview = ({ title, status, dueDate, onClick }) => {
                 return require('../assets/SubmitIcon.png');
         }
     };
+
+    let dueDate;
+    if (status === 'submissions') {
+        dueDate = submissionDueDate;
+    } else {
+        dueDate = rankDueDate;
+    }
+
+    console.log(`Due date for ${title}: ${dueDate}`);
+    
 
     const dueDateFormatted = dueDate ? `Due ${dueDate}` : 'Completed';
 

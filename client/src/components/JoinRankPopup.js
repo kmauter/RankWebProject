@@ -21,7 +21,7 @@ function JoinRankPopup({ onClose, onJoin }) {
             >
                 <label>
                     Game Code:  
-                    <input type="text" name="gameCode" required />
+                    <input className='input-form' type="text" name="gameCode" required />
                 </label>
                 <button type="submit">Join</button>
             </form>

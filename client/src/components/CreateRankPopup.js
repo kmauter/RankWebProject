@@ -22,15 +22,15 @@ function CreateRankPopup({ onClose, onCreate, createdGameCode}) {
             >
                 <label>
                     Theme:  
-                    <input type="text" name="theme" required />
+                    <input className='input-form' type="text" name="theme" required />
                 </label>
                 <label>
                     Submission Due Date:  
-                    <input type="date" name="submissionDuedate" required />
+                    <input className='input-form' type="date" name="submissionDuedate" required />
                 </label>
                 <label>
                     Rank Due Date:  
-                    <input type="date" name="rankDuedate" required />
+                    <input className='input-form' type="date" name="rankDuedate" required />
                 </label>
                 <button type="submit">Create Game</button>
             </form>

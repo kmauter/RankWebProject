@@ -170,6 +170,7 @@ code {
   max-height: 100vh; /* Prevent overflow */
   width: 100%; /* Full width */
   display: flex;
+  height: 100vh;
   flex-direction: column;
   align-items: center; /* Center content horizontally */
   overflow-x: hidden; /* Prevent horizontal scrolling */
@@ -213,17 +214,23 @@ code {
 }
 
 .main-content {
+  padding: 10px; 
+  width: 100%; 
+  height: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column; 
+  overflow-y: auto; 
+  scrollbar-width: none;
+}
+
+.game-previews-grid {
   display: grid; 
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Responsive grid layout */
   flex-wrap: wrap; /* Allow items to wrap to the next line */
   justify-content: center; /* Align items to the left */
   align-items: normal; /*Align items to the top */
   gap: 5px; /* Space between items */
-  padding: 10px; /* Padding around the main content */
-  width: 100%; /* Full width of the container */
-  max-height: 100%; /* Prevent overflow */
-  overflow-y: auto; /* Enable vertical scrolling if content overflows */
-  scrollbar-width: none;
 }
 
 .main-content::-webkit-scrollbar {
@@ -462,6 +469,140 @@ code {
   cursor: pointer;
 }
 
+.close-button-details {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 3rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: var(--grey)
+}
+
+.owner-next-button {
+  position: absolute;
+  bottom: 10px; /* Adjust as needed */
+  right: 20px; /* Adjust as needed */
+  font-size: 3rem; /* Adjust font size as needed */
+  font-weight: bold;
+  cursor: pointer; /* Change cursor to pointer on hover */
+  color: var(--grey);
+}
+
+.back-button {
+  position: absolute;
+  bottom: 10px; /* Adjust as needed */
+  left: 20px; /* Adjust as needed */
+  font-size: 3rem; /* Adjust font size as needed */
+  font-weight: bold;
+  cursor: pointer; /* Change cursor to pointer on hover */
+  color: var(--grey);
+}
+
+.form-section {
+  width: 50%;
+}
+
+.game-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* space between title and code */
+    margin-bottom: -1.3rem;
+}
+
+.game-title-row h2 {
+  font-size: 3rem; /* Adjust font size as needed */
+  margin: 0; /* Remove default margin */
+  font-weight: bold; /* Make the title bold */
+}
+
+.game-title-row span {
+  font-size: 1.5rem; /* Adjust font size as needed */
+  margin: 0; /* Remove default margin */
+}
+
+.game-code {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.popup-due-date {
+  font-size: 1.7rem
+} 
+
+.game-details-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%; /* Adjust width as needed */
+  height: 100%; /* Full height of the parent container */
+  min-height: 100%; /* Ensure it takes full height */
+  flex: 1;
+}
+
+.game-details {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 20px;
+  height: 100%; 
+  min-height: 100%;
+  width: 100%;
+  flex: 1;
+  color: var(--grey);
+}
+
+button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: 'HandFont', sans-serif; /* Use the custom font */
+}
+
+.input-form {
+  border: none;
+  padding: 0.5em;
+  background-color: rgba(64, 57, 43, 0.35);
+  height: 1.6em;
+  border-radius: 8px;
+}
+
+textarea {
+  border: none;
+  padding: 0.5em;
+  background-color: rgba(64, 57, 43, 0.35);
+  height: 4em; /* Adjust height as needed */
+  border-radius: 8px;
+  resize: none; /* Prevent resizing */
+}
+
+.form-item {
+  margin-bottom: 1rem;
+}
+
+.game-settings-columns {
+    display: flex;
+    gap: 2rem;
+    justify-content: space-between;
+    margin-top: 2em;
+}
+
+.settings-column {
+    flex: 1;
+    min-width: 200px;
+}
+
+.game-settings h2 {
+    font-size: 2.5rem;
+}
+
+.game-settings-columns h3 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    text-decoration: underline;
+}
+
 @media (max-width: 900px) {
   .main-popup {
     padding: 7%;
@@ -478,20 +619,16 @@ code {
     top: 10%;
     right: 10%;
   }
-}
-
-.game-title-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem; /* space between title and code */
-    margin-bottom: -1.3rem;
-}
-
-.game-code {
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-
-.popup-due-date {
-  font-weight: bold;
+  .form-section {
+    width: 100%; 
+  }
+  .game-settings-columns {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 0 1rem; /* Add padding for smaller screens */
+  }
+  .settings-column {
+    min-width: 0;
+    width: 100%;
+  }
 }

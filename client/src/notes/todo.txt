@@ -15,8 +15,6 @@ X Owner column for Game
 - completed UI for games
 - Calculations for completed stats
 - Show who submitted what at end of game
-- Allow editing of the 
-
 
 Stretch
 - make popups mobile friendly
@@ -24,3 +22,4 @@ Stretch
 - change profile picture
 - Set max number of players during create rank
 - Improve popup UI to just use dashboard-main. I think this would look much much cleaner.
+- Due date changed to "Due in _ day(s)"
