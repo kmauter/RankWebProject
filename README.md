@@ -94,12 +94,32 @@ ALSO
 - [ ] Display all songs, avg ranking and controversy score, and who submitted what
 - [ ] Allow download for full data
 
+## Deployment Setup and Development Processes
+- [ ] Set up a cloud server (e.g., DigitalOcean Droplet) and connect via SSH
+- [ ] Install all required software (Python, Node.js, Nginx, Git, etc.) on the server
+- [ ] Clone the project repository onto the server
+- [ ] Set up and activate a Python virtual environment for the backend
+- [ ] Install backend dependencies and configure environment variables/secrets
+- [ ] Build the frontend React app for production use
+- [ ] Configure Flask to serve the built frontend files
+- [ ] Set up Gunicorn to serve the Flask backend as a service
+- [ ] Configure Nginx as a reverse proxy to Gunicorn for production traffic
+- [ ] Set up a domain name and HTTPS with Let's Encrypt
+- [ ] Test the deployed site to ensure all services are running correctly
+- [ ] Set up Docker for consistent development and deployment environments
+- [ ] Implement a CI/CD pipeline for automated testing and deployment
+- [ ] Document any environment variables, secrets, or special setup steps for future development
+
 ## Stretch and QOL Features for Later
 - [ ] Game creation includes choosing the submission limit
 - [ ] Owner can delete the game
 - [ ] Owner can set playlist name
-- [ ] Modify game creation UI to match main-content format
-- [ ] Modify game joining UI to match main-content format
+- [ ] Modify all popups to use main-content format (settings, game creation, game joining)
+- [ ] Upload Profile pictures for users
+- [ ] Detailed User statistics
+- [ ] Upload Game images for preview backgrounds?
+- [ ] Add additional developers to the project (David, Spencer, Steph, Justin)
+
 
 ### Goal POC Date: 8/1
 
