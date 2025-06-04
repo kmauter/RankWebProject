@@ -15,6 +15,11 @@ SPOTIFY_CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET')
 SPOTIFY_REDIRECT_URI = os.getenv('SPOTIFY_REDIRECT_URI')
 SPOTIFY_SCOPES = 'playlist-modify-public playlist-modify-private'
 
+YOUTUBE_CLIENT_ID = os.environ.get("YOUTUBE_CLIENT_ID")
+YOUTUBE_CLIENT_SECRET = os.environ.get("YOUTUBE_CLIENT_SECRET")
+YOUTUBE_REDIRECT_URI = os.environ.get("YOUTUBE_REDIRECT_URI")
+YOUTUBE_SCOPES = "https://www.googleapis.com/auth/youtube"
+
 def get_user_id_from_token():
     token = request.headers.get('Authorization').split(" ")[1]
     decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
@@ -524,3 +529,44 @@ def spotify_callback():
     user.spotify_refresh_token = refresh_token
     db.session.commit()
     return "Spotify account connected! You can close this window."
+
+@app.route('/api/connect-youtube', methods=['GET'])
+def connect_youtube():
+    user_id = get_user_id_from_token()
+    session['youtube_user_id'] = user_id
+    auth_url = (
+        "https://accounts.google.com/o/oauth2/v2/auth"
+        f"?client_id={YOUTUBE_CLIENT_ID}"
+        f"&response_type=code"
+        f"&redirect_uri={YOUTUBE_REDIRECT_URI}"
+        f"&scope={YOUTUBE_SCOPES.replace(' ', '%20')}"
+        "&access_type=offline"
+        "&prompt=consent"
+    )
+    return redirect(auth_url)
+
+@app.route('/api/youtube-callback')
+def youtube_callback():
+    code = request.args.get('code')
+    user_id = session.get('youtube_user_id')
+    if not code or not user_id:
+        return "Missing code or user", 400
+
+    token_url = "https://oauth2.googleapis.com/token"
+    payload = {
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": YOUTUBE_REDIRECT_URI,
+        "client_id": YOUTUBE_CLIENT_ID,
+        "client_secret": YOUTUBE_CLIENT_SECRET,
+    }
+    response = requests.post(token_url, data=payload)
+    if response.status_code != 200:
+        return "Failed to get token", 400
+    tokens = response.json()
+    refresh_token = tokens.get("refresh_token")
+
+    user = User.query.get(user_id)
+    user.youtube_refresh_token = refresh_token
+    db.session.commit()
+    return "YouTube account connected! You can close this window."
