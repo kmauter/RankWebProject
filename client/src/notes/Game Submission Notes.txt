@@ -26,6 +26,11 @@ Automation Between
 - Switch stage to ranking
 - Fetch additional song data from spotify (loudness, happiness, etc.)
 
+Automation Bug Tracker
+- Update Game table to include playlist links
+- Remove song links from songs table
+- Add youtube/spotify account to user table for use in creating playlists
+
 During Ranking Stage
 - Player can see all songs/artists/comments
 - Player can rank all songs

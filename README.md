@@ -66,9 +66,12 @@ ALSO
 - [ ] Fetch additional song data from spotify (loudness, happiness, etc.)
 
 ## Automation Bug Tracker
-- [ ] Update Game table to include playlist links
-- [ ] Remove song links from songs table
-- [ ] Add youtube/spotify account to user table for use in creating playlists
+- [X] Update Game table to include playlist links
+- [X] Remove song links from songs table
+- [X] Add youtube/spotify account to user table for use in creating playlists
+- [X] Create API endpoints for connecting user spotify and youtube
+- [ ] Update settings popup to use connection endpoints
+- [ ] Access user spotify and youtube tokens in automation task
 
 ## During Ranking Stage
 - [ ] Player can see all songs/artists/comments
@@ -123,6 +126,16 @@ ALSO
 
 ### Goal POC Date: 8/1
 
-# Deployment Notes
+# More Tasks
+
+## Proper Documentation
+
+## Security
+
+## Deployment Notes
 
 - If using a production WSGI server (e.g., Gunicorn), ensure the background scheduler in `app/tasks.py` runs only once (not per worker process). Consider running it as a separate service in production.
+
+- Store client secrets and tokens securely (use environment variables).
+- Use HTTPS in production.
+- Never expose secrets to the frontend.

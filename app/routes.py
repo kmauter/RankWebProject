@@ -1,12 +1,19 @@
 from app import app, db
 from app.models import User, Game, GameUser, Song, Rank, Stage
-from flask import request
+from flask import request, redirect, url_for, session
 from flask import jsonify
 from datetime import datetime, timedelta
+import os
 import jwt
 import random
 import string
+import requests
 from app.config import SECRET_KEY
+
+SPOTIFY_CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID')
+SPOTIFY_CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET')
+SPOTIFY_REDIRECT_URI = os.getenv('SPOTIFY_REDIRECT_URI')
+SPOTIFY_SCOPES = 'playlist-modify-public playlist-modify-private'
 
 def get_user_id_from_token():
     token = request.headers.get('Authorization').split(" ")[1]
@@ -187,7 +194,9 @@ def get_user_games():
                 'owner': {
                     'id': game.owner_id,
                     'username': User.query.get(game.owner_id).username if game.owner_id else None
-                }
+                },
+                'spotifyPlaylistUrl': game.spotify_playlist_url,
+                'youtubePlaylistUrl': game.youtube_playlist_url
             }
             for game in games
         ]
@@ -288,9 +297,7 @@ def get_my_songs_for_game():
                 'id': song.id,
                 'song_name': song.title,
                 'artist': song.artist,
-                'comment': song.comment,
-                'spotify_link': song.spotify_link,
-                'youtube_link': song.youtube_link
+                'comment': song.comment
             }
             for song in songs
         ]
@@ -357,7 +364,10 @@ def get_game_details(game_code):
             'owner': {
                 'id': game.owner_id,
                 'username': User.query.get(game.owner_id).username if game.owner_id else None
-            }
+            },
+            'maxSubmissionsPerUser': game.max_submissions_per_user,
+            'spotifyPlaylistUrl': game.spotify_playlist_url,
+            'youtubePlaylistUrl': game.youtube_playlist_url
         }
         
         return jsonify(game_data), 200
@@ -390,8 +400,6 @@ def get_game_songs_details(game_code):
                 'song_name': song.title,
                 'artist': song.artist,
                 'comment': song.comment,
-                'spotify_link': song.spotify_link,
-                'youtube_link': song.youtube_link,
                 'user': {
                     'id': song.user_id,
                     'username': User.query.get(song.user_id).username if song.user_id else None
@@ -475,3 +483,44 @@ def remove_player_from_game(game_code, remove_user_id):
         return jsonify({'error': 'Token has expired'}), 401
     except Exception as e:
         return jsonify({'error': f'{e}'}), 401
+    
+@app.route('/api/connect-spotify', methods=['GET'])
+def connect_spotify():
+    user_id = get_user_id_from_token()
+    session['spotify_user_id'] = user_id # save for callback
+    auth_url = (
+        "https://accounts.spotify.com/authorize"
+        f"?client_id={SPOTIFY_CLIENT_ID}"
+        f"&response_type=code"
+        f"&redirect_uri={SPOTIFY_REDIRECT_URI}"
+        f"&scope={SPOTIFY_SCOPES.replace(' ', '%20')}"
+    )
+    return redirect(auth_url)
+
+@app.route('/api/spotify-callback')
+def spotify_callback():
+    code = request.args.get('code')
+    user_id = session.get('spotify_user_id')
+    if not code or not user_id:
+        return "Missing code or user", 400
+    
+    # Exchange code for tokens
+    token_url = "https://accounts.spotify.com/api/token"
+    payload = {
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": SPOTIFY_REDIRECT_URI,
+        "client_id": SPOTIFY_CLIENT_ID,
+        "client_secret": SPOTIFY_CLIENT_SECRET,
+    }
+    response = requests.post(token_url, data=payload)
+    if response.status_code != 200:
+        return "Failed to get token", 400
+    tokens = response.json()
+    refresh_token = tokens.get("refresh_token")
+
+    # Save refresh token to user
+    user = User.query.get(user_id)
+    user.spotify_refresh_token = refresh_token
+    db.session.commit()
+    return "Spotify account connected! You can close this window."

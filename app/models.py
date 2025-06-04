@@ -9,6 +9,8 @@ class User(db.Model):
     username = db.Column(db.String, unique=True, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     password_hash = db.Column(db.String, nullable=False)
+    spotify_refresh_token = db.Column(db.String, nullable=True)
+    youtube_refresh_token = db.Column(db.String, nullable=True)
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -35,6 +37,8 @@ class Game(db.Model):
     rank_duedate = db.Column(db.Date, nullable=False)
     game_code = db.Column(db.String, nullable=False)
     max_submissions_per_user = db.Column(db.Integer, nullable=False, default=2)
+    spotify_playlist_url = db.Column(db.String, nullable=True)
+    youtube_playlist_url = db.Column(db.String, nullable=True)
     
     __table_args__ = (
         db.UniqueConstraint('game_code', name='uq_game_code'),  # Explicitly define the unique constraint name
@@ -68,8 +72,8 @@ class Song(db.Model):
     title = db.Column(db.String, nullable=False)
     artist = db.Column(db.String, nullable=False)
     comment = db.Column(db.String, nullable=True)
-    spotify_link = db.Column(db.String, nullable=True)
-    youtube_link = db.Column(db.String, nullable=True)
+    # spotify_link = db.Column(db.String, nullable=True)
+    # youtube_link = db.Column(db.String, nullable=True)
     
     # Define relationships here
     user = db.relationship('User', backref='songs')  # Link to User
