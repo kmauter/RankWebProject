@@ -8,7 +8,10 @@ import jwt
 import random
 import string
 import requests
-from app.config import SECRET_KEY
+from app.config import Config
+from dotenv import load_dotenv
+from urllib.parse import urlencode
+load_dotenv()
 
 SPOTIFY_CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID')
 SPOTIFY_CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET')
@@ -22,7 +25,7 @@ YOUTUBE_SCOPES = "https://www.googleapis.com/auth/youtube"
 
 def get_user_id_from_token():
     token = request.headers.get('Authorization').split(" ")[1]
-    decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+    decoded = jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
     return decoded['user_id']
 
 @app.route('/')
@@ -69,7 +72,7 @@ def login():
                 'user_id': user.id,
                 'exp': datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
             },
-            SECRET_KEY,
+            Config.SECRET_KEY,
             algorithm='HS256'
         )
         return jsonify({'message': 'Login successful!', 'token': token, 'user_id': user.id})
@@ -492,23 +495,26 @@ def remove_player_from_game(game_code, remove_user_id):
 @app.route('/api/connect-spotify', methods=['GET'])
 def connect_spotify():
     user_id = get_user_id_from_token()
-    session['spotify_user_id'] = user_id # save for callback
-    auth_url = (
-        "https://accounts.spotify.com/authorize"
-        f"?client_id={SPOTIFY_CLIENT_ID}"
-        f"&response_type=code"
-        f"&redirect_uri={SPOTIFY_REDIRECT_URI}"
-        f"&scope={SPOTIFY_SCOPES.replace(' ', '%20')}"
-    )
+    # Use OAuth2 state parameter to pass user_id
+    state = str(user_id)
+    params = {
+        "client_id": SPOTIFY_CLIENT_ID,
+        "response_type": "code",
+        "redirect_uri": SPOTIFY_REDIRECT_URI,
+        "scope": SPOTIFY_SCOPES,
+        "state": state,
+    }
+    auth_url = "https://accounts.spotify.com/authorize?" + urlencode(params)
+    print("Spotify auth_url:", auth_url)
     return redirect(auth_url)
 
-@app.route('/api/spotify-callback')
+@app.route('/api/spotifycallback')
 def spotify_callback():
     code = request.args.get('code')
-    user_id = session.get('spotify_user_id')
-    if not code or not user_id:
+    state = request.args.get('state')
+    if not code or not state:
         return "Missing code or user", 400
-    
+    user_id = state
     # Exchange code for tokens
     token_url = "https://accounts.spotify.com/api/token"
     payload = {
@@ -523,7 +529,6 @@ def spotify_callback():
         return "Failed to get token", 400
     tokens = response.json()
     refresh_token = tokens.get("refresh_token")
-
     # Save refresh token to user
     user = User.query.get(user_id)
     user.spotify_refresh_token = refresh_token
@@ -533,25 +538,27 @@ def spotify_callback():
 @app.route('/api/connect-youtube', methods=['GET'])
 def connect_youtube():
     user_id = get_user_id_from_token()
-    session['youtube_user_id'] = user_id
-    auth_url = (
-        "https://accounts.google.com/o/oauth2/v2/auth"
-        f"?client_id={YOUTUBE_CLIENT_ID}"
-        f"&response_type=code"
-        f"&redirect_uri={YOUTUBE_REDIRECT_URI}"
-        f"&scope={YOUTUBE_SCOPES.replace(' ', '%20')}"
-        "&access_type=offline"
-        "&prompt=consent"
-    )
+    state = str(user_id)
+    params = {
+        "client_id": YOUTUBE_CLIENT_ID,
+        "response_type": "code",
+        "redirect_uri": YOUTUBE_REDIRECT_URI,
+        "scope": YOUTUBE_SCOPES,
+        "access_type": "offline",
+        "prompt": "consent",
+        "state": state,
+    }
+    auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
+    print("YouTube auth_url:", auth_url)
     return redirect(auth_url)
 
-@app.route('/api/youtube-callback')
+@app.route('/api/youtubecallback')
 def youtube_callback():
     code = request.args.get('code')
-    user_id = session.get('youtube_user_id')
-    if not code or not user_id:
+    state = request.args.get('state')
+    if not code or not state:
         return "Missing code or user", 400
-
+    user_id = state
     token_url = "https://oauth2.googleapis.com/token"
     payload = {
         "grant_type": "authorization_code",
@@ -565,7 +572,6 @@ def youtube_callback():
         return "Failed to get token", 400
     tokens = response.json()
     refresh_token = tokens.get("refresh_token")
-
     user = User.query.get(user_id)
     user.youtube_refresh_token = refresh_token
     db.session.commit()

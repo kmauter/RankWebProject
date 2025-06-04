@@ -70,6 +70,8 @@ ALSO
 - [X] Remove song links from songs table
 - [X] Add youtube/spotify account to user table for use in creating playlists
 - [X] Create API endpoints for connecting user spotify and youtube
+- [X] Set up Youtube OAuth Redirect
+- [X] Set up Spotify OAuth Redirect
 - [ ] Update settings popup to use connection endpoints
 - [ ] Access user spotify and youtube tokens in automation task
 
@@ -139,3 +141,13 @@ ALSO
 - Store client secrets and tokens securely (use environment variables).
 - Use HTTPS in production.
 - Never expose secrets to the frontend.
+
+- Add your production domain’s redirect URI (e.g., https://yourdomain.com/api/spotifycallback) to the app’s Redirect URIs in spotify dashboard.
+- Add your production domain’s redirect URI (e.g., https://yourdomain.com/api/youtubecallback) to the OAuth consent screen and credentials in google cloud console.
+- Set env variables to correct production URIs
+- In Google Cloud Console, publish your OAuth consent screen (move from "testing" to "production").
+    - Complete the verification process (Google will require you to provide details, privacy policy, and may take several days to approve).
+    - You may need to prove domain ownership and provide a privacy policy URL.
+- Ensure your backend and frontend are served over HTTPS in production.
+- Update any CORS settings to allow requests from your production frontend domain.
+- For Google, once verified and in production, you can remove test users and allow public access.
