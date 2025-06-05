@@ -58,7 +58,7 @@ ALSO
 - [X] User should get some feedback when saving the changed dates.
 
 ## Automation Between
-- [ ] When submission due date is passed, trigger Automation
+- [X] When submission due date is passed, trigger Automation
 - [X] Randomize order of songs
 - [X] Create Spotify playlist (if given spotify account to make playlist in)
 - [X] Create Youtube playlist (if given youtube account to make playlist in OR default account)
