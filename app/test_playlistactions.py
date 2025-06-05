@@ -11,8 +11,8 @@ class MockGame:
         self.id = id
         self.theme = theme
         
-SPOTIFY_REFRESH_TOKEN = "AQBehMhluFGnztEn7O4_Udqriyn8sDC9yNNBXsEcXeW3JizS_878N1o_v4pQ1vxO1BnKJq8bSZlq8rQvLq4y4JaPnKqrScs00fcBZHkGfniNcB0equIURSNDU7Lnfnx8CMQ"
-YOUTUBE_REFRESH_TOKEN = "1//01Aw4CtEFr6sqCgYIARAAGAESNwF-L9IrxXNdtEUVvoiFzoSfTi8-J42mmgIbPB7eNjYNXoNoOv5ZQE86aPozA2ua1AnIT8PSBzA"
+SPOTIFY_REFRESH_TOKEN = "..."
+YOUTUBE_REFRESH_TOKEN = "..."
 
 def test_create_playlist():
     game = MockGame(id=123, theme="Test Playlist")
