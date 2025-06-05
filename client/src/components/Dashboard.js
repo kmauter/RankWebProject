@@ -7,6 +7,7 @@ import JoinRankPopup from './JoinRankPopup';
 import GameDetails from './GameDetails';
 import { UserContext } from '../contexts/UserContext';
 import GameSettings from './GameSettings';
+import SettingsPopup from './SettingsPopup';
 
 function Dashboard() {
     const [isUserMenuVisible, setUserMenuVisible] = useState(false);
@@ -379,6 +380,22 @@ function Dashboard() {
         }
     };
 
+    const handleSpotifyConnect = () => {
+        if (!user || !user.user_id) {
+            alert("You must be logged in to connect Spotify.");
+            return;
+        }
+        window.open(`http://127.0.0.1:5000/api/connect-spotify?user_id=${user.user_id}`, "_blank", "noopener,noreferrer");
+    };
+
+    const handleYouTubeConnect = () => {
+        if (!user || !user.user_id) {
+            alert("You must be logged in to connect YouTube.");
+            return;
+        }
+        window.open(`http://127.0.0.1:5000/api/connect-youtube?user_id=${user.user_id}`, "_blank", "noopener,noreferrer");
+    };
+
     return (
         <div className="dashboard">
             <Header onUserIconClick={() => handleUserIconClick()} />
@@ -389,13 +406,11 @@ function Dashboard() {
                     </div>
                 )}
             {isSettingsPopupVisible && (
-                <div className="settings-popup">
-                    <h2>Settings</h2>
-                    <p>Oops! This isn't ready yet.</p>
-                    <p className='close-popup' onClick={handleSettingsClick}>
-                        Close
-                    </p>
-                </div>
+                <SettingsPopup
+                    onClose={handleSettingsClick}
+                    onSpotifyConnect={handleSpotifyConnect}
+                    onYouTubeConnect={handleYouTubeConnect}
+                />
             )}
             <main className="dashboard-main">
                 <img

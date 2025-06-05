@@ -59,11 +59,10 @@ ALSO
 
 ## Automation Between
 - [ ] When submission due date is passed, trigger Automation
-- [ ] Randomize order of songs
-- [ ] Create Spotify playlist (if given spotify account to make playlist in)
-- [ ] Create Youtube playlist (if given youtube account to make playlist in OR default account)
-- [ ] Switch stage to ranking
-- [ ] Fetch additional song data from spotify (loudness, happiness, etc.)
+- [X] Randomize order of songs
+- [X] Create Spotify playlist (if given spotify account to make playlist in)
+- [X] Create Youtube playlist (if given youtube account to make playlist in OR default account)
+- [X] Switch stage to ranking
 
 ## Automation Bug Tracker
 - [X] Update Game table to include playlist links
@@ -72,8 +71,8 @@ ALSO
 - [X] Create API endpoints for connecting user spotify and youtube
 - [X] Set up Youtube OAuth Redirect
 - [X] Set up Spotify OAuth Redirect
-- [ ] Update settings popup to use connection endpoints
-- [ ] Access user spotify and youtube tokens in automation task
+- [X] Update settings popup to use connection endpoints
+- [X] Access user spotify and youtube tokens in automation task
 
 ## During Ranking Stage
 - [ ] Player can see all songs/artists/comments
@@ -92,7 +91,6 @@ ALSO
 - [ ] If a user submitted a song but did not rank, they cannot win. Make Red in results
 - [ ] Calculate statistics for the game:
 - [ ] Each song avg rank, median rank, range, controversy score, user who submitted
-- [ ] Create a spreadsheet with all stats, ones given above and including additional song data from spotify
 
 ## During Finished Stage
 - [ ] Display winner and winning song prominently!
@@ -116,6 +114,7 @@ ALSO
 - [ ] Document any environment variables, secrets, or special setup steps for future development
 
 ## Stretch and QOL Features for Later
+- [ ] UNIT TESTS
 - [ ] Game creation includes choosing the submission limit
 - [ ] Owner can delete the game
 - [ ] Owner can set playlist name
@@ -124,6 +123,11 @@ ALSO
 - [ ] Detailed User statistics
 - [ ] Upload Game images for preview backgrounds?
 - [ ] Add additional developers to the project (David, Spencer, Steph, Justin)
+- [ ] Standardize font sizes
+- [ ] Hover effects and increased visual feedback for interactions
+- [ ] Email Verification
+- [ ] Fetch additional song data from spotify (loudness, happiness, etc.) during first stage change
+- [ ] Create a spreadsheet with all stats, ones given above and including additional song data from spotify during second stage change
 
 
 ### Goal POC Date: 8/1
@@ -151,3 +155,5 @@ ALSO
 - Ensure your backend and frontend are served over HTTPS in production.
 - Update any CORS settings to allow requests from your production frontend domain.
 - For Google, once verified and in production, you can remove test users and allow public access.
+- Proper logging for debugging purposes
+- Allow users to submit bug reports

@@ -4,7 +4,7 @@ from app.models import Game, Stage
 from datetime import datetime, timezone
 import random
 from app.spotifyactions import create_spotify_playlist_for_game
-from app.youtubeactions import create_youtube_playlist
+from app.youtubeactions import create_youtube_playlist_for_game
 
 def update_game_stages():
     with app.app_context():
@@ -14,27 +14,46 @@ def update_game_stages():
             Game.submission_duedate <= now
         ).all()
         for game in games:
+            db.session.add(game)
+            
             # Change the stage to RANK
             game.stage = Stage.RANK
-            db.session.add(game)
             
             # Fetch all songs for the game
             songs = list(game.songs)
-            
-            # Randomize the order of the songs, then create playlists
             random.shuffle(songs)
+            game.song_order = [song.id for song in songs]  
             
-            # Find spotify and youtube links for the game
-            # they will not have them at this point, so we will need to find them
-            spotify_url = create_spotify_playlist_for_game(game, songs, user_spotify_id="...")
-            youtube_url = create_youtube_playlist(f"{game.theme}", f"Auto-generated playlist for {game.theme} ({game.game_code})", songs)
-
-            game.spotify_playlist_url = spotify_url
-            game.youtube_playlist_url = youtube_url
+            if not songs:
+                print(f"No songs found for game {game.id}. Skipping playlist creation.")
             
-            
-            
-            
+            else:
+                owner = game.owner
+                spotify_refresh_token = owner.spotify_refresh_token if owner else None
+                youtube_refresh_token = owner.youtube_refresh_token if owner else None
+                
+                if not spotify_refresh_token:
+                    print(f"Owner of game {game.id} has not connected their Spotify. Skipping Spotify playlist creation.")
+                else:
+                    spotify_url = create_spotify_playlist_for_game(
+                        game, 
+                        songs, 
+                        f"{game.theme} ({game.game_code})",
+                        spotify_refresh_token
+                    )
+                    game.spotify_playlist_url = spotify_url
+                    
+                if not youtube_refresh_token:
+                    print(f"Owner of game {game.id} has not connected their YouTube. Skipping YouTube playlist creation.")
+                else:
+                    youtube_url = create_youtube_playlist_for_game(
+                        game, 
+                        songs,
+                        f"{game.theme} ({game.game_code})", 
+                        youtube_refresh_token
+                    )
+                    game.youtube_playlist_url = youtube_url
+                
             db.session.commit()
             print(f"Game {game.id} rolled over to ranking stage.")
             

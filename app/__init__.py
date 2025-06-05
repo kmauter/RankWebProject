@@ -6,7 +6,7 @@ from app.config import Config
 app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = app.config["SECRET_KEY"]  # Set secret key immediately after config
-print("SECRET_KEY at startup:", app.secret_key)
+# print("SECRET_KEY at startup:", app.secret_key)
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)

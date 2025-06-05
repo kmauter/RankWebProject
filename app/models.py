@@ -1,6 +1,7 @@
 from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from enum import Enum as PyEnum
+from sqlalchemy.types import JSON
 
 class User(db.Model):
     __tablename__ = 'User'
@@ -39,6 +40,7 @@ class Game(db.Model):
     max_submissions_per_user = db.Column(db.Integer, nullable=False, default=2)
     spotify_playlist_url = db.Column(db.String, nullable=True)
     youtube_playlist_url = db.Column(db.String, nullable=True)
+    song_order = db.Column(JSON, nullable=True) 
     
     __table_args__ = (
         db.UniqueConstraint('game_code', name='uq_game_code'),  # Explicitly define the unique constraint name

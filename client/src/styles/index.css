@@ -603,6 +603,26 @@ textarea {
     text-decoration: underline;
 }
 
+.settings-popup h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.settings-popup button {
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+.settings-popup p {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+
+.settings-popup button:hover {
+  text-decoration: underline; /* Underline on hover */
+}
+
 @media (max-width: 900px) {
   .main-popup {
     padding: 7%;

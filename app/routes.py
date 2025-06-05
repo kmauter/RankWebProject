@@ -201,7 +201,7 @@ def get_user_games():
                 'maxSubmissionsPerUser': game.max_submissions_per_user,
                 'owner': {
                     'id': game.owner_id,
-                    'username': User.query.get(game.owner_id).username if game.owner_id else None
+                    'username': (User.query.get(game.owner_id).username if (game.owner_id and User.query.get(game.owner_id)) else None)
                 },
                 'spotifyPlaylistUrl': game.spotify_playlist_url,
                 'youtubePlaylistUrl': game.youtube_playlist_url
@@ -494,7 +494,9 @@ def remove_player_from_game(game_code, remove_user_id):
     
 @app.route('/api/connect-spotify', methods=['GET'])
 def connect_spotify():
-    user_id = get_user_id_from_token()
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Missing user_id'}), 400
     # Use OAuth2 state parameter to pass user_id
     state = str(user_id)
     params = {
@@ -524,6 +526,7 @@ def spotify_callback():
         "client_id": SPOTIFY_CLIENT_ID,
         "client_secret": SPOTIFY_CLIENT_SECRET,
     }
+    print("Spotify token payload:", payload)
     response = requests.post(token_url, data=payload)
     if response.status_code != 200:
         return "Failed to get token", 400
@@ -531,13 +534,17 @@ def spotify_callback():
     refresh_token = tokens.get("refresh_token")
     # Save refresh token to user
     user = User.query.get(user_id)
+    if not user:
+        return "User not found for this OAuth callback", 400
     user.spotify_refresh_token = refresh_token
     db.session.commit()
     return "Spotify account connected! You can close this window."
 
 @app.route('/api/connect-youtube', methods=['GET'])
 def connect_youtube():
-    user_id = get_user_id_from_token()
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Missing user_id'}), 400
     state = str(user_id)
     params = {
         "client_id": YOUTUBE_CLIENT_ID,
