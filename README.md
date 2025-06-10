@@ -38,7 +38,12 @@ Now that you're all set up, let's run this thing.
 # Roadmap
 
 ## Game Creation
-- [ ] User can add game description
+- [ ] Game creation includes a description
+- [ ] Game creation includes choosing the submission limit
+- [ ] Use main-content format
+
+## Game Join
+- [ ] Use main-content format
 
 ## During Submission Stage
 - [X] Player can submit a song
@@ -130,10 +135,9 @@ ALSO
 
 ## Stretch and QOL Features for Later
 - [ ] UNIT TESTS
-- [ ] Game creation includes choosing the submission limit
 - [ ] Owner can delete the game
 - [ ] Owner can set playlist name
-- [ ] Modify all popups to use main-content format (settings, game creation, game joining)
+- [ ] Modify settings popups to use main-content format
 - [ ] Upload Profile pictures for users
 - [ ] Detailed User statistics
 - [ ] Upload Game images for preview backgrounds?
