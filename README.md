@@ -37,6 +37,9 @@ Now that you're all set up, let's run this thing.
 
 # Roadmap
 
+## Game Creation
+- [ ] User can add game description
+
 ## During Submission Stage
 - [X] Player can submit a song
 - [X] Player can delete a submitted song
@@ -56,6 +59,7 @@ ALSO
 - [X] When submitting a song, if it is successful, it should clear the fields
 - [X] Fix formatting on settings page to emphasize headers
 - [X] User should get some feedback when saving the changed dates.
+- [ ] UI for description viewing
 
 ## Automation Between
 - [X] When submission due date is passed, trigger Automation
@@ -64,7 +68,7 @@ ALSO
 - [X] Create Youtube playlist (if given youtube account to make playlist in OR default account)
 - [X] Switch stage to ranking
 
-## Automation Bug Tracker
+## Automation Additional Tasks
 - [X] Update Game table to include playlist links
 - [X] Remove song links from songs table
 - [X] Add youtube/spotify account to user table for use in creating playlists
@@ -83,6 +87,17 @@ ALSO
 - [ ] Owner can edit the playlists if songs are incorrect (unless they did not give their account info)
 - [ ] Owner can change rank due date
 - [ ] Owner can remove player from game
+
+## Ranking Additional Tasks
+- [X] CRUD Ranking APIs
+- [X] Drag and Drop UI
+- [X] Style Drag and Drop
+- [ ] Saving rankings button
+- [ ] Save finished and partial rankings
+- [ ] Load finished and partial rankings
+- [ ] UI for Youtube and Spotify Playlists
+- [ ] Songs don't refresh once loaded during ranking stage
+- [ ] Mobile Friendly UI
 
 ## Automation Between
 - [ ] When ranking due date is passed, trigger Automation

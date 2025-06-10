@@ -1,16 +1,293 @@
 import React, { useState } from "react";
+import { DndContext } from '@dnd-kit/core';
 
-function GameDetails({ game, onBack, currentUser, onSongSubmit, onNextPage, userSongs, onDeleteSong }) {
+import Draggable from './Draggable';
+import Droppable from './Droppable';
+
+function GameDetails({ 
+    game, 
+    songs, 
+    userRanking = [],
+    onBack, 
+    currentUser, 
+    onSongSubmit, 
+    onNextPage,
+    userSongs, 
+    onDeleteSong,
+    onSaveRanking
+}) {
     const [songName, setSongName] = useState('');
     const [songArtist, setSongArtist] = useState('');
     const [songComment, setSongComment] = useState('');
     
+    // --- Move these hooks to the top level, outside any conditionals ---
+    // For rankings drag-and-drop
+    const initialRanking = Array(songs.length).fill(null);
+    const [ranking, setRanking] = useState(initialRanking);
+    const [pool, setPool] = useState(songs.map(s => s.id));
+
+    // For comment expand/collapse
+    const [expandedComments, setExpandedComments] = useState({});
+    const toggleComment = (songId) => {
+        setExpandedComments(prev => ({
+            ...prev,
+            [songId]: !prev[songId]
+        }));
+    };
+
     const isOwner = game.owner.id === currentUser.user_id;
+    const status = game.status;
     const dueDate =
     game.status === 'submissions'
         ? game.submissionDueDate
         : game.rankDueDate;
 
+    let content;
+    if (status === 'submissions') {
+        content = (
+            <>
+                <p className='popup-due-date'>Due {dueDate}</p>
+                
+                <div className="form-section">
+                    <form
+                        className='submit-song-form'
+                        onSubmit={async (e) => {
+                            e.preventDefault();
+                            await onSongSubmit(songName, songArtist, songComment);
+                            setSongName('');
+                            setSongArtist('');
+                            setSongComment('');
+                        }}
+                    >
+                        <div className="form-item">
+                            <label>
+                                Song Name:
+                                <input 
+                                    className='input-form' 
+                                    type="text" 
+                                    name="songName" 
+                                    required
+                                    value={songName}
+                                    onChange={(e) => setSongName(e.target.value)}
+                                />
+                            </label>
+                        </div>
+                        <div className="form-item">
+                            <label>
+                                Artist:
+                                <input 
+                                    className='input-form' 
+                                    type="text" 
+                                    name="songArtist" 
+                                    required 
+                                    value={songArtist}
+                                    onChange={e => setSongArtist(e.target.value)}
+                                />
+                            </label>
+                        </div>
+                        <div className="form-item">
+                            <label htmlFor='songComment'>Comments:</label>
+                            <textarea
+                                id="songComment"
+                                name="songComment"
+                                rows={2}
+                                style={{ width: '100%', resize: 'vertical' }}
+                                value={songComment}
+                                onChange={(e) => setSongComment(e.target.value)}
+                            />
+                        </div>
+                        <button type="submit">Submit Song</button>
+                    </form>
+                </div>
+
+                <div className="user-songs-section" style={{ marginTop: '2em', width: '100%' }}>
+                    {userSongs.length === 0 ? (
+                        <p style={{ textAlign: 'center' }}>No songs submitted yet.</p>
+                    ) : (
+                        <>
+                            <h3 style={{ textAlign: 'center' }}>Your Submitted Songs</h3>
+                            <ul style={{ listStyle: 'none', padding: 0 }}>
+                                {userSongs.map((song, idx) => (
+                                    <li key={song.id || idx} style={{ textAlign: 'center' }}>
+                                        <strong>{song.song_name}</strong> - {song.artist}
+                                        <button onClick={() => onDeleteSong(song.id)}>(X)</button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
+                </div>
+
+                {isOwner && (
+                    <button onClick={onNextPage} className="owner-next-button">{'>>'}</button>
+                )}
+            </>
+        );
+    } else if (status === 'rankings') {
+        // Two-column drag-and-drop ranking UI
+        function handleDragEnd(event) {
+            const {active, over} = event;
+            if (!over) return;
+            // Dropping onto a ranking slot
+            if (over.id.startsWith('slot-')) {
+                const slotIdx = parseInt(over.id.replace('slot-', ''));
+                setRanking(r => {
+                    const newR = [...r];
+                    const prevIdx = r.findIndex(id => id === active.id);
+                    const destSong = newR[slotIdx];
+                    // If dragging from pool
+                    if (prevIdx === -1) {
+                        newR[slotIdx] = active.id;
+                    } else {
+                        // Swapping between slots
+                        newR[slotIdx] = active.id;
+                        newR[prevIdx] = destSong;
+                    }
+                    return newR;
+                });
+                setPool(p => {
+                    let newP = p.filter(id => id !== active.id);
+                    const destSong = ranking[slotIdx];
+                    const prevIdx = ranking.findIndex(id => id === active.id);
+                    // If dragging from pool, and slot was occupied, put previous song in pool
+                    if (prevIdx === -1 && destSong && !newP.includes(destSong)) {
+                        newP = [...newP, destSong];
+                    }
+                    // If swapping between slots, no pool update needed
+                    return newP;
+                });
+            }
+            // Dropping from ranking slot back to pool
+            if (over.id === 'pool') {
+                const slotIdx = ranking.findIndex(id => id === active.id);
+                if (slotIdx !== -1) {
+                    setRanking(r => {
+                        const newR = [...r];
+                        newR[slotIdx] = null;
+                        return newR;
+                    });
+                    setPool(p => [...p, active.id]);
+                }
+            }
+        }
+
+        content = (
+            <>
+                <p className='popup-due-date'>Due {dueDate}</p>
+                <DndContext onDragEnd={handleDragEnd}>
+                    <div className="rank-drag-area">
+                        {/* Pool column */}
+                        <Droppable id="pool">
+                            <h2>Song Pool</h2>
+                            <div className="song-pool-main">
+                                {/*Corners*/}
+                                <img src={require('../assets/Corner5.png')} alt="Bottom Left Corner" className="corner-image bottom-left" />
+                                <img src={require('../assets/Corner7.png')} alt="Bottom Right Corner" className="corner-image bottom-right" />
+                                <img src={require('../assets/Corner4.png')} alt="Top Right Corner" className="corner-image top-right" />
+                                <img src={require('../assets/Corner6.png')} alt="Top Left Corner" className="corner-image top-left" />
+                                {pool.length === 0 ? <div>No songs left</div> :
+                                    pool.map(id => {
+                                        const song = songs.find(s => s.id === id);
+                                        if (!song) return null;
+                                        const hasComment = song.comment && song.comment.trim() !== '';
+                                        return (
+                                            <div key={id} className='song-pool-item'>
+                                                <div className='song-pool-item-content'>
+                                                    {hasComment && (
+                                                        <button
+                                                            onClick={() => toggleComment(id)}
+                                                            className="comment-toggle-btn"
+                                                            aria-label={expandedComments[id] ? 'Hide comment' : 'Show comment'}
+                                                        >
+                                                            {expandedComments[id] ? '-' : '+'}
+                                                        </button>
+                                                    )}
+                                                    <Draggable id={id}>
+                                                        {song.song_name || song.title} - {song.artist}
+                                                    </Draggable>
+                                                </div>
+                                                {hasComment && expandedComments[id] && (
+                                                    <div className="song-pool-item-comment">
+                                                        {song.comment}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })
+                                }
+                            </div>
+                        </Droppable>
+                        {/* Ranking column */}
+                        <div className="rank-area-outer">
+                            <h2>Your Ranking</h2>
+                            <div className="rank-area">
+                                <img src={require('../assets/Corner1.png')} alt="Top Left Corner" className="corner-image top-left" />
+                                <img src={require('../assets/Corner8.png')} alt="Top Right Corner" className="corner-image top-right" />
+                                <img src={require('../assets/Corner2.png')} alt="Bottom Left Corner" className="corner-image bottom-left" />
+                                <img src={require('../assets/Corner7.png')} alt="Bottom Right Corner" className="corner-image bottom-right" />
+                                {ranking.map((id, idx) => (
+                                    <Droppable key={idx} id={`slot-${idx}`}>
+                                        <div className={
+                                            "rank-area-item " + 
+                                            (id ? "rank-area-item--filled" : "rank-area-item--empty")
+                                            }
+                                        >
+                                            {id ? (
+                                                (() => {
+                                                    const song = songs.find(s => s.id === id);
+                                                    if (!song) return <span style={{color:'#f00'}}>Unknown song</span>;
+                                                    const hasComment = song.comment && song.comment.trim() !== '';
+                                                    return (
+                                                        <>
+                                                        <div className="rank-area-item-content">
+                                                            <strong className="rank-area-number">{idx + 1}.</strong>
+                                                            {hasComment && (
+                                                                <button
+                                                                    onClick={() => toggleComment(id)}
+                                                                    className="comment-toggle-btn"
+                                                                    aria-label={expandedComments[id] ? 'Hide comment' : 'Show comment'}
+                                                                >
+                                                                    {expandedComments[id] ? '-' : '+'}
+                                                                </button>
+                                                            )}
+                                                            <Draggable id={id}>
+                                                                {song.song_name || song.title} - {song.artist}
+                                                            </Draggable>
+                                                        </div>
+                                                        {/* Show comment if expanded */}
+                                                        {hasComment && expandedComments[id] && (
+                                                            <div className="rank-area-item-comment">
+                                                                {song.comment}
+                                                            </div>
+                                                        )}
+                                                        </>
+                                                    );
+                                                })()
+                                            ) : (
+                                                <div className="rank-area-item-content">
+                                                    <strong className="rank-area-number">{idx + 1}.</strong>
+                                                    <span>Drop song here</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </Droppable>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </DndContext>
+                {isOwner && (
+                    <button onClick={onNextPage} className="owner-next-button">{'>>'}</button>
+                )}
+            </>
+        );
+    } else if (status === 'results') {
+        content = (
+            <>
+                <p>Results phase! (Show results, winners, etc.)</p>
+            </>
+        );
+    }
     return (
         <div className="game-details">
             <button onClick={onBack} className="close-button-details">X</button>
@@ -20,81 +297,7 @@ function GameDetails({ game, onBack, currentUser, onSongSubmit, onNextPage, user
                 <span className='game-code'>{game.gameCode}</span>
             </div>
 
-            <p className='popup-due-date'>Due {dueDate}</p>
-            
-            <div className="form-section">
-                <form
-                    className='submit-song-form'
-                    onSubmit={async (e) => {
-                        e.preventDefault();
-                        await onSongSubmit(songName, songArtist, songComment);
-                        setSongName('');
-                        setSongArtist('');
-                        setSongComment('');
-                    }}
-                >
-                    <div className="form-item">
-                        <label>
-                            Song Name:
-                            <input 
-                                className='input-form' 
-                                type="text" 
-                                name="songName" 
-                                required
-                                value={songName}
-                                onChange={(e) => setSongName(e.target.value)}
-                            />
-                        </label>
-                    </div>
-                    <div className="form-item">
-                        <label>
-                            Artist:
-                            <input 
-                                className='input-form' 
-                                type="text" 
-                                name="songArtist" 
-                                required 
-                                value={songArtist}
-                                onChange={e => setSongArtist(e.target.value)}
-                            />
-                        </label>
-                    </div>
-                    <div className="form-item">
-                        <label htmlFor='songComment'>Comments:</label>
-                        <textarea
-                            id="songComment"
-                            name="songComment"
-                            rows={2}
-                            style={{ width: '100%', resize: 'vertical' }}
-                            value={songComment}
-                            onChange={(e) => setSongComment(e.target.value)}
-                        />
-                    </div>
-                    <button type="submit">Submit Song</button>
-                </form>
-            </div>
-
-            <div className="user-songs-section" style={{ marginTop: '2em', width: '100%' }}>
-                {userSongs.length === 0 ? (
-                    <p style={{ textAlign: 'center' }}>No songs submitted yet.</p>
-                ) : (
-                    <>
-                        <h3 style={{ textAlign: 'center' }}>Your Submitted Songs</h3>
-                        <ul style={{ listStyle: 'none', padding: 0 }}>
-                            {userSongs.map((song, idx) => (
-                                <li key={song.id || idx} style={{ textAlign: 'center' }}>
-                                    <strong>{song.song_name}</strong> - {song.artist}
-                                    <button onClick={() => onDeleteSong(song.id)}>(X)</button>
-                                </li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-            </div>
-
-            {isOwner && (
-                <button onClick={onNextPage} className="owner-next-button">{'>>'}</button>
-            )}
+            {content}
         </div>
     );
 }

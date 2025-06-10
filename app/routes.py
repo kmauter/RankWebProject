@@ -583,3 +583,98 @@ def youtube_callback():
     user.youtube_refresh_token = refresh_token
     db.session.commit()
     return "YouTube account connected! You can close this window."
+
+@app.route('/api/game/<game_code>/rankings', methods=['GET'])
+def get_user_rankings(game_code):
+    """Get the current user's rankings for all songs in the game."""
+    try:
+        user_id = get_user_id_from_token()
+        game = Game.query.filter_by(game_code=game_code).first()
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+        # Get all ranks for this user and game, ordered by rank_position
+        ranks = Rank.query.filter_by(game_id=game.id, user_id=user_id).order_by(Rank.rank_position).all()
+        # Return as a list of song IDs in order
+        rank_order = [rank.song_id for rank in ranks]
+        return jsonify({'rank_order': rank_order}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception as e:
+        return jsonify({'error': f'{e}'}), 401
+
+@app.route('/api/game/<game_code>/rankings', methods=['POST'])
+def save_user_rankings(game_code):
+    """Save or update the user's rankings for all songs in the game."""
+    try:
+        user_id = get_user_id_from_token()
+        data = request.get_json()
+        rank_order = data.get('rank_order')  # List of song IDs in ranked order
+        if not isinstance(rank_order, list) or not rank_order:
+            return jsonify({'error': 'rank_order must be a non-empty list of song IDs'}), 400
+        game = Game.query.filter_by(game_code=game_code).first()
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+        # Remove any existing ranks for this user/game
+        Rank.query.filter_by(game_id=game.id, user_id=user_id).delete()
+        # Add new ranks
+        for pos, song_id in enumerate(rank_order, start=1):
+            rank = Rank(game_id=game.id, user_id=user_id, song_id=song_id, rank_position=pos)
+            db.session.add(rank)
+        db.session.commit()
+        return jsonify({'message': 'Rankings saved successfully'}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception as e:
+        return jsonify({'error': f'{e}'}), 401
+
+@app.route('/api/game/<game_code>/rankings', methods=['PATCH'])
+def patch_user_rankings(game_code):
+    """Partially update the user's rankings for a game (e.g., update a single song's rank)."""
+    try:
+        user_id = get_user_id_from_token()
+        data = request.get_json()
+        updates = data.get('updates')  # List of {song_id, rank_position}
+        if not isinstance(updates, list) or not updates:
+            return jsonify({'error': 'updates must be a non-empty list of objects'}), 400
+        game = Game.query.filter_by(game_code=game_code).first()
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+        # Use a temporary negative value for rank_position to avoid NOT NULL constraint error
+        song_ids = [u.get('song_id') for u in updates if u.get('song_id')]
+        ranks_to_update = Rank.query.filter(Rank.game_id==game.id, Rank.user_id==user_id, Rank.song_id.in_(song_ids)).all()
+        for idx, rank in enumerate(ranks_to_update):
+            rank.rank_position = -1000 - idx  # Use a unique negative value
+        db.session.flush()  # Apply changes but don't commit yet
+        # Now, set the new rank_position values
+        for update in updates:
+            song_id = update.get('song_id')
+            rank_position = update.get('rank_position')
+            if not song_id or not isinstance(rank_position, int):
+                continue  # skip invalid
+            rank = Rank.query.filter_by(game_id=game.id, user_id=user_id, song_id=song_id).first()
+            if rank:
+                rank.rank_position = rank_position
+            else:
+                db.session.add(Rank(game_id=game.id, user_id=user_id, song_id=song_id, rank_position=rank_position))
+        db.session.commit()
+        return jsonify({'message': 'Rankings updated successfully'}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception as e:
+        return jsonify({'error': f'{e}'}), 401
+
+@app.route('/api/game/<game_code>/rankings', methods=['DELETE'])
+def delete_user_rankings(game_code):
+    """Delete all rankings for the current user in the given game."""
+    try:
+        user_id = get_user_id_from_token()
+        game = Game.query.filter_by(game_code=game_code).first()
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+        Rank.query.filter_by(game_id=game.id, user_id=user_id).delete()
+        db.session.commit()
+        return jsonify({'message': 'Rankings deleted successfully'}), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception as e:
+        return jsonify({'error': f'{e}'}), 401

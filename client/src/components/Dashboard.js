@@ -46,6 +46,7 @@ function Dashboard() {
 
     const handleGameClick = (game) => {
         console.log('Game clicked:', game);
+        fetchSongs(game.gameCode);
         setSelectedGame(game);
     };
 
@@ -203,6 +204,7 @@ function Dashboard() {
     useEffect(() => {
         if (selectedGame && !showGameSettings && user) {
             fetchUserSongs(selectedGame.gameCode);
+            fetchSongs(selectedGame.gameCode);
         }
     }, [selectedGame, showGameSettings, user]);
 
@@ -459,6 +461,7 @@ function Dashboard() {
                             ) : (
                                 <GameDetails
                                     game={selectedGame}
+                                    songs={songs}
                                     onBack={() => setSelectedGame(null)}
                                     currentUser={user}
                                     onSongSubmit={handleSongSubmission}

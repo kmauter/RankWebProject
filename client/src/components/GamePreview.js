@@ -2,7 +2,7 @@ import React from 'react';
 import '../styles/GamePreview.css';
 
 const GamePreview = ({ title, status, submissionDueDate, rankDueDate, onClick }) => {
-    console.log(`Rendering GamePreview for ${title} with status ${status}`);
+    // console.log(`Rendering GamePreview for ${title} with status ${status}`);
     
     const statusImage = () => {
         switch (status) {
@@ -24,7 +24,7 @@ const GamePreview = ({ title, status, submissionDueDate, rankDueDate, onClick })
         dueDate = rankDueDate;
     }
 
-    console.log(`Due date for ${title}: ${dueDate}`);
+    // console.log(`Due date for ${title}: ${dueDate}`);
     
 
     const dueDateFormatted = dueDate ? `Due ${dueDate}` : 'Completed';
