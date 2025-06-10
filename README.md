@@ -30,7 +30,7 @@ Now that you have the tools, you've got to put them to use.
 Now that you're all set up, let's run this thing.
 
 1. Open two separate terminals, just like before
-2. In the first, avigate to the client directory by executing: cd client
+2. In the first, navigate to the client directory by executing: cd client
 3. Now execute: npm start
 4. In the other terminal execute: py run.py
 5. It should be running now!
