@@ -382,6 +382,38 @@ function Dashboard() {
         }
     };
 
+    const handleSaveRanking = async (ranking) => {
+        if (!selectedGame || !user) {
+            alert('No game or user selected.');
+            return;
+        }
+        try {
+            const token = localStorage.getItem('authToken');
+            // Only send non-null song IDs in order
+            const filteredRanking = ranking.filter(id => id !== null);
+            const response = await fetch(`/api/game/${selectedGame.gameCode}/rankings`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ranking: filteredRanking }),
+            });
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Ranking saved:', data);
+                // alert('Ranking saved!');
+            } else {
+                const errorText = await response.text();
+                console.error('Failed to save ranking:', errorText);
+                // alert('Failed to save ranking.');
+            }
+        } catch (error) {
+            console.error('Error saving ranking:', error);
+            // alert('Error saving ranking.');
+        }
+    };
+
     const handleSpotifyConnect = () => {
         if (!user || !user.user_id) {
             alert("You must be logged in to connect Spotify.");
@@ -468,6 +500,7 @@ function Dashboard() {
                                     onNextPage={() => setShowGameSettings(true)}
                                     userSongs={userSongs}
                                     onDeleteSong={handleDeleteSong}
+                                    onSaveRanking={handleSaveRanking}
                                 />
                             )}
                         </div>

@@ -773,6 +773,14 @@ textarea {
   border-radius: 0px;
 }
 
+.save-ranking-btn {
+  width: 100%;
+  display: block; 
+  margin: 24px 0 0 0;
+  font-size: 1em;
+  position: relative;
+}
+
 @media (max-width: 900px) {
   .main-popup {
     padding: 7%;

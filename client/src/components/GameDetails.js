@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DndContext } from '@dnd-kit/core';
 
 import Draggable from './Draggable';
@@ -25,6 +25,11 @@ function GameDetails({
     const initialRanking = Array(songs.length).fill(null);
     const [ranking, setRanking] = useState(initialRanking);
     const [pool, setPool] = useState(songs.map(s => s.id));
+
+    useEffect(() => {
+        setRanking(Array(songs.length).fill(null));
+        setPool(songs.map(s => s.id));
+    }, [songs]);
 
     // For comment expand/collapse
     const [expandedComments, setExpandedComments] = useState({});
@@ -273,6 +278,19 @@ function GameDetails({
                                     </Droppable>
                                 ))}
                             </div>
+                            <button
+                                className="save-ranking-btn"
+                                onClick={() => {
+                                    console.log("Current Ranking: ", ranking);
+                                    onSaveRanking(ranking);
+                                }}
+                            >
+                                Save Ranking
+                                <img src={require('../assets/Corner1.png')} alt="Top Left Corner" className="corner-image top-left" />
+                                <img src={require('../assets/Corner8.png')} alt="Top Right Corner" className="corner-image top-right" />
+                                <img src={require('../assets/Corner2.png')} alt="Bottom Left Corner" className="corner-image bottom-left" />
+                                <img src={require('../assets/Corner7.png')} alt="Bottom Right Corner" className="corner-image bottom-right" />
+                            </button>
                         </div>
                     </div>
                 </DndContext>

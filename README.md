@@ -97,11 +97,11 @@ ALSO
 - [X] CRUD Ranking APIs
 - [X] Drag and Drop UI
 - [X] Style Drag and Drop
-- [ ] Saving rankings button
-- [ ] Save finished and partial rankings
+- [X] Saving rankings button
+- [X] Save finished and partial rankings
 - [ ] Load finished and partial rankings
 - [ ] UI for Youtube and Spotify Playlists
-- [ ] Songs don't refresh once loaded during ranking stage
+- [X] Songs don't refresh once loaded during ranking stage
 - [ ] Mobile Friendly UI
 
 ## Automation Between

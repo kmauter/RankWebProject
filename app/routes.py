@@ -608,7 +608,7 @@ def save_user_rankings(game_code):
     try:
         user_id = get_user_id_from_token()
         data = request.get_json()
-        rank_order = data.get('rank_order')  # List of song IDs in ranked order
+        rank_order = data.get('ranking')  # List of song IDs in ranked order
         if not isinstance(rank_order, list) or not rank_order:
             return jsonify({'error': 'rank_order must be a non-empty list of song IDs'}), 400
         game = Game.query.filter_by(game_code=game_code).first()
