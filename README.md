@@ -84,12 +84,12 @@ ALSO
 - [X] Access user spotify and youtube tokens in automation task
 
 ## During Ranking Stage
-- [ ] Player can see all songs/artists/comments
-- [ ] Player can rank all songs
-- [ ] Player can edit ranking 
-- [ ] Player can save unfinished or finished rankings
-- [ ] Owner can do all things Player can do AND
-- [ ] Owner can edit the playlists if songs are incorrect (unless they did not give their account info)
+- [X] Player can see all songs/artists/comments
+- [X] Player can rank all songs
+- [X] Player can edit ranking 
+- [X] Player can save unfinished or finished rankings
+- [X] Owner can do all things Player can do AND
+- [X] Owner can edit the playlists if songs are incorrect (unless they did not give their account info)
 - [ ] Owner can change rank due date
 - [ ] Owner can remove player from game
 
