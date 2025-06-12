@@ -99,7 +99,7 @@ ALSO
 - [X] Style Drag and Drop
 - [X] Saving rankings button
 - [X] Save finished and partial rankings
-- [ ] Load finished and partial rankings
+- [X] Load finished and partial rankings
 - [ ] UI for Youtube and Spotify Playlists
 - [X] Songs don't refresh once loaded during ranking stage
 - [ ] Mobile Friendly UI
