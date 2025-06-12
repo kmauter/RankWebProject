@@ -23,6 +23,7 @@ function Dashboard() {
     const [submissionDueDate, setSubmissionDueDate] = useState('');
     const [rankDueDate, setRankDueDate] = useState('');
     const [userSongs, setUserSongs] = useState([]);
+    const [userRanking, setUserRanking] = useState([]);
 
     const { user, logout } = useContext(UserContext); // Assuming you have a UserContext to get user info
 
@@ -187,6 +188,26 @@ function Dashboard() {
             setPlayers([]); // Optionally clear players on error
         }
     };
+
+    const fetchUserRanking = async (gameCode) => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch(`/api/game/${gameCode}/rankings`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setUserRanking(data.ranking || []);
+            } else {
+                setUserRanking([]);
+            }
+        } catch (error) {
+            setUserRanking([]);
+        }
+    };
                             
     useEffect(() => {
         fetchGames();
@@ -207,6 +228,12 @@ function Dashboard() {
             fetchSongs(selectedGame.gameCode);
         }
     }, [selectedGame, showGameSettings, user]);
+
+    useEffect(() => {
+        if (selectedGame && selectedGame.status === 'rankings') {
+            fetchUserRanking(selectedGame.gameCode);
+        }
+    }, [selectedGame]);
 
     const handleCreateGame = async (theme, submissionDuedate, rankDuedate) => {
         try {
@@ -390,14 +417,14 @@ function Dashboard() {
         try {
             const token = localStorage.getItem('authToken');
             // Only send non-null song IDs in order
-            const filteredRanking = ranking.filter(id => id !== null);
+            // const filteredRanking = ranking.filter(id => id !== null);
             const response = await fetch(`/api/game/${selectedGame.gameCode}/rankings`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ ranking: filteredRanking }),
+                body: JSON.stringify({ ranking: ranking }),
             });
             if (response.ok) {
                 const data = await response.json();
@@ -494,6 +521,7 @@ function Dashboard() {
                                 <GameDetails
                                     game={selectedGame}
                                     songs={songs}
+                                    userRanking={userRanking}
                                     onBack={() => setSelectedGame(null)}
                                     currentUser={user}
                                     onSongSubmit={handleSongSubmission}

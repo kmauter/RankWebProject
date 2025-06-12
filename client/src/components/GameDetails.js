@@ -27,9 +27,20 @@ function GameDetails({
     const [pool, setPool] = useState(songs.map(s => s.id));
 
     useEffect(() => {
-        setRanking(Array(songs.length).fill(null));
-        setPool(songs.map(s => s.id));
-    }, [songs]);
+        const slotCount = songs.length;
+        const rankingArr = Array(slotCount).fill(null);
+
+        console.log("Loaded User Ranking: ", userRanking);
+
+        userRanking.forEach((id, idx) => {
+            if (idx < slotCount) rankingArr[idx] = id;
+        });
+
+        setRanking(rankingArr);
+
+        const poolArr = songs.map(s => s.id).filter(id => !rankingArr.includes(id));
+        setPool(poolArr);
+    }, [songs, userRanking]);
 
     // For comment expand/collapse
     const [expandedComments, setExpandedComments] = useState({});

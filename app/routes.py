@@ -594,9 +594,15 @@ def get_user_rankings(game_code):
             return jsonify({'error': 'Game not found'}), 404
         # Get all ranks for this user and game, ordered by rank_position
         ranks = Rank.query.filter_by(game_id=game.id, user_id=user_id).order_by(Rank.rank_position).all()
-        # Return as a list of song IDs in order
-        rank_order = [rank.song_id for rank in ranks]
-        return jsonify({'rank_order': rank_order}), 200
+        
+        ranking = []
+        for rank in ranks:
+            index = rank.rank_position - 1
+            while len(ranking) <= index:
+                ranking.append(None)
+            ranking[index] = rank.song_id
+        
+        return jsonify({'ranking': ranking}), 200
     except jwt.ExpiredSignatureError:
         return jsonify({'error': 'Token has expired'}), 401
     except Exception as e:
@@ -617,7 +623,10 @@ def save_user_rankings(game_code):
         # Remove any existing ranks for this user/game
         Rank.query.filter_by(game_id=game.id, user_id=user_id).delete()
         # Add new ranks
+        print(rank_order)
         for pos, song_id in enumerate(rank_order, start=1):
+            print(pos, song_id)
+            if song_id is None: continue
             rank = Rank(game_id=game.id, user_id=user_id, song_id=song_id, rank_position=pos)
             db.session.add(rank)
         db.session.commit()
