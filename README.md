@@ -90,8 +90,8 @@ ALSO
 - [X] Player can save unfinished or finished rankings
 - [X] Owner can do all things Player can do AND
 - [X] Owner can edit the playlists if songs are incorrect (unless they did not give their account info)
-- [ ] Owner can change rank due date
-- [ ] Owner can remove player from game
+- [X] Owner can change rank due date
+- [X] Owner can remove player from game
 
 ## Ranking Additional Tasks
 - [X] CRUD Ranking APIs
@@ -100,17 +100,17 @@ ALSO
 - [X] Saving rankings button
 - [X] Save finished and partial rankings
 - [X] Load finished and partial rankings
-- [ ] UI for Youtube and Spotify Playlists
+- [X] UI for Youtube and Spotify Playlists
 - [X] Songs don't refresh once loaded during ranking stage
 - [ ] Mobile Friendly UI
 
 ## Automation Between
-- [ ] When ranking due date is passed, trigger Automation
+- [X] When ranking due date is passed, trigger Automation
 - [ ] Take all finished rankings (where all songs have been ranked)
-- [ ] Remove the songs a user submitted from their ranking
+- [X] Remove the songs a user submitted from their ranking
 - [ ] If a user submitted a song but did not rank, they cannot win. Make Red in results
-- [ ] Calculate statistics for the game:
-- [ ] Each song avg rank, median rank, range, controversy score, user who submitted
+- [X] Calculate statistics for the game:
+- [X] Each song avg rank, median rank, range, controversy score, user who submitted
 
 ## During Finished Stage
 - [ ] Display winner and winning song prominently!

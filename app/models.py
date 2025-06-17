@@ -100,3 +100,26 @@ class Rank(db.Model):
 
     def __repr__(self):
         return f'<Rank game={self.game_id} user={self.user_id} song={self.song_id} position={self.rank_position}>'
+    
+    
+class SongStat(db.Model):
+    __tablename__ = 'SongStat'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    song_id = db.Column(db.Integer, db.ForeignKey('Song.id'), nullable=False)
+    game_id = db.Column(db.Integer, db.ForeignKey('Game.id'), nullable=False)
+    
+    avg_rank = db.Column(db.Float, nullable=True)
+    median_rank = db.Column(db.Float, nullable=True)
+    rank_range = db.Column(db.Integer, nullable=True)
+    controversy = db.Column(db.Float, nullable=True)
+    
+    __table_args__ = (
+        db.UniqueConstraint('song_id', 'game_id', name='uq_song_game_stat'),
+    )
+    
+    song = db.relationship('Song', backref='stats')
+    game = db.relationship('Game', backref='song_stats')
+    
+    def __repr__(self):
+        return f'<SongStat song={self.song_id} game={self.game_id}>'

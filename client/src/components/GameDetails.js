@@ -58,6 +58,27 @@ function GameDetails({
         ? game.submissionDueDate
         : game.rankDueDate;
 
+    
+    // function getSpotifyPlaylistId(url) {
+    //     const match = url.match(/playlist\/([a-zA-Z0-9]+)(\?|$)/);
+    //     return match ? match[1] : null;
+    // }
+
+    const spotifyPlaylistUrl = game.spotifyPlaylistUrl;
+    // const spotifyEmbedUrl = spotifyPlaylistId 
+    //     ? `https://open.spotify.com/embed/playlist/${spotifyPlaylistId}` 
+    //     : null;
+    
+    // function getYoutubePlaylistId(url) {
+    //     const match = url.match(/[?&]list=([a-zA-Z0-9_-]+)/);
+    //     return match ? match[1] : null;
+    // }
+
+    const youtubePlaylistUrl = game.youtubePlaylistUrl
+    // const youtubeEmbedUrl = youtubePlaylistId 
+    //     ? `https://www.youtube.com/embed/videoseries?list=${youtubePlaylistId}` 
+    //     : null;
+
     let content;
     if (status === 'submissions') {
         content = (
@@ -192,6 +213,37 @@ function GameDetails({
                 <p className='popup-due-date'>Due {dueDate}</p>
                 <DndContext onDragEnd={handleDragEnd}>
                     <div className="rank-drag-area">
+                        <div className="playlist-links">
+                            <h2>Playlist Links</h2>
+                            {spotifyPlaylistUrl && (
+                                <a
+                                    href={spotifyPlaylistUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="playlist-btn"
+                                >
+                                    Open Spotify Playlist
+                                    <img src={require('../assets/Corner1.png')} alt="Top Left Corner" className="corner-image top-left" />
+                                    <img src={require('../assets/Corner8.png')} alt="Top Right Corner" className="corner-image top-right" />
+                                    <img src={require('../assets/Corner2.png')} alt="Bottom Left Corner" className="corner-image bottom-left" />
+                                    <img src={require('../assets/Corner7.png')} alt="Bottom Right Corner" className="corner-image bottom-right" />
+                                </a>
+                            )}
+                            {youtubePlaylistUrl && (
+                                <a
+                                    href={youtubePlaylistUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="playlist-btn"
+                                >
+                                    Open YouTube Playlist
+                                    <img src={require('../assets/Corner1.png')} alt="Top Left Corner" className="corner-image top-left" />
+                                    <img src={require('../assets/Corner8.png')} alt="Top Right Corner" className="corner-image top-right" />
+                                    <img src={require('../assets/Corner2.png')} alt="Bottom Left Corner" className="corner-image bottom-left" />
+                                    <img src={require('../assets/Corner7.png')} alt="Bottom Right Corner" className="corner-image bottom-right" />
+                                </a>
+                            )}
+                        </div>
                         {/* Pool column */}
                         <Droppable id="pool">
                             <h2>Song Pool</h2>
