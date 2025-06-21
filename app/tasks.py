@@ -118,7 +118,7 @@ def update_game_stages():
             
 def start_scheduler():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(func=update_game_stages, trigger="interval", minutes=15)
+    scheduler.add_job(func=update_game_stages, trigger="interval", hours=1)
     scheduler.start()
         
 # Automation Between

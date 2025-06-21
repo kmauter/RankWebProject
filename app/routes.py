@@ -1,5 +1,5 @@
 from app import app, db
-from app.models import User, Game, GameUser, Song, Rank, Stage
+from app.models import User, Game, GameUser, Song, Rank, Stage, SongStat
 from flask import request, redirect, url_for, session
 from flask import jsonify
 from datetime import datetime, timedelta
@@ -402,8 +402,11 @@ def get_game_songs_details(game_code):
         songs = Song.query.filter_by(game_id=game.id).all()
         
         # Serialize the song data
-        song_data = [
-            {
+        song_data = []
+        for song in songs:
+            stat = SongStat.query.filter_by(song_id=song.id, game_id=game.id).first()
+            print(stat)
+            song_data.append({
                 'id': song.id,
                 'song_name': song.title,
                 'artist': song.artist,
@@ -411,10 +414,12 @@ def get_game_songs_details(game_code):
                 'user': {
                     'id': song.user_id,
                     'username': User.query.get(song.user_id).username if song.user_id else None
-                }
-            }
-            for song in songs
-        ]
+                },
+                'avg_rank': stat.avg_rank if stat else None,
+                'median_rank': stat.median_rank if stat else None,
+                'rank_range': stat.rank_range if stat else None,
+                'controversy': stat.controversy if stat else None,
+            })
         
         return jsonify(song_data), 200
     except jwt.ExpiredSignatureError:

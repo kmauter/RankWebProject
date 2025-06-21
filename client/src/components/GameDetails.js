@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { DndContext } from '@dnd-kit/core';
+import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 
 import Draggable from './Draggable';
 import Droppable from './Droppable';
@@ -25,6 +25,11 @@ function GameDetails({
     const initialRanking = Array(songs.length).fill(null);
     const [ranking, setRanking] = useState(initialRanking);
     const [pool, setPool] = useState(songs.map(s => s.id));
+
+    const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 5 } });
+    const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } });
+    const sensors = useSensors(mouseSensor, touchSensor);
+
 
     useEffect(() => {
         const slotCount = songs.length;
@@ -211,7 +216,7 @@ function GameDetails({
         content = (
             <>
                 <p className='popup-due-date'>Due {dueDate}</p>
-                <DndContext onDragEnd={handleDragEnd}>
+                <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
                     <div className="rank-drag-area">
                         <div className="playlist-links">
                             <h2>Playlist Links</h2>
@@ -363,9 +368,53 @@ function GameDetails({
             </>
         );
     } else if (status === 'results') {
+        const sortedSongs = [...songs]
+            .sort((a, b) => (a.finalRank || 999) - (b.finalRank || 999))
+            .reverse();
+
         content = (
             <>
-                <p>Results phase! (Show results, winners, etc.)</p>
+                <h2>Results</h2>
+                <table className="results-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Song</th>
+                            <th>Artist</th>
+                            <th>Submitted By</th>
+                            <th>Avg</th>
+                            <th>Range</th>
+                            <th>Controversy</th>
+                            {/* Add more columns as needed, e.g. Score, Avg Rank */}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {sortedSongs.map((song, idx) => (
+                            <tr key={song.id}>
+                                <td data-label="Rank">{song.finalRank || idx + 1}</td>
+                                <td data-label="Song">{song.song_name || song.title}</td>
+                                <td data-label="Artist">{song.artist}</td>
+                                <td data-label="Submitted By">{song.user?.username || 'Unknown'}</td>
+                                <td data-label="Avg">
+                                    {song.avg_rank != null
+                                    ? Number.isInteger(Number(song.avg_rank))
+                                        ? Number(song.avg_rank)
+                                        : Number(song.avg_rank).toFixed(2)
+                                    : '-'}
+                                </td>
+                                <td data-label="Range">{song.rank_range != null ? song.rank_range : '-'}</td>
+                                <td data-label="Controversy">
+                                    {song.controversy != null
+                                    ? Number.isInteger(Number(song.controversy))
+                                        ? Number(song.controversy)
+                                        : Number(song.controversy).toFixed(2)
+                                    : '-'}
+                                </td>
+                                {/* Add more cells as needed */}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </>
         );
     }

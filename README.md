@@ -102,7 +102,7 @@ ALSO
 - [X] Load finished and partial rankings
 - [X] UI for Youtube and Spotify Playlists
 - [X] Songs don't refresh once loaded during ranking stage
-- [ ] Mobile Friendly UI
+- [X] Mobile Friendly UI
 
 ## Automation Between
 - [X] When ranking due date is passed, trigger Automation
@@ -114,8 +114,9 @@ ALSO
 
 ## During Finished Stage
 - [ ] Display winner and winning song prominently!
-- [ ] Display all songs, avg ranking and controversy score, and who submitted what
+- [X] Display all songs, avg ranking and controversy score, and who submitted what
 - [ ] Allow download for full data
+- [X] Mobile Friendly UI
 
 ## Deployment Setup and Development Processes
 - [ ] Set up a cloud server (e.g., DigitalOcean Droplet) and connect via SSH
