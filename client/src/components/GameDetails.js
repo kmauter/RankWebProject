@@ -85,11 +85,29 @@ function GameDetails({
     //     : null;
 
     let content;
+    const [showDescription, setShowDescription] = useState(false);
     if (status === 'submissions') {
         content = (
             <>
+                <div className="game-title-row">
+                    {game.description && (
+                        <button
+                            onClick={() => setShowDescription(v => !v)}
+                            aria-label={showDescription ? 'Hide description' : 'Show description'}
+                            className="comment-toggle-btn"
+                        >
+                            {showDescription ? '-' : '+'}
+                        </button>
+                    )}
+                    <h2 style={{ margin: 0 }}>{game.title}</h2>
+                    <span className='game-code'>{game.gameCode}</span>
+                </div>
                 <p className='popup-due-date'>Due {dueDate}</p>
-                
+                {showDescription && game.description && (
+                    <div className="song-pool-item-comment">
+                        {game.description}
+                    </div>
+                )}
                 <div className="form-section">
                     <form
                         className='submit-song-form'
@@ -215,6 +233,10 @@ function GameDetails({
 
         content = (
             <>
+                <div className="game-title-row">
+                    <h2>{game.title}</h2>
+                    <span className='game-code'>{game.gameCode}</span>
+                </div>
                 <p className='popup-due-date'>Due {dueDate}</p>
                 <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
                     <div className="rank-drag-area">
@@ -374,7 +396,11 @@ function GameDetails({
 
         content = (
             <>
-                <h2>Results</h2>
+                <div className="game-title-row">
+                    <h2>{game.title}</h2>
+                    <span className='game-code'>{game.gameCode}</span>
+                </div>
+                <p className='popup-due-date'>Finished {dueDate}</p>
                 <table className="results-table">
                     <thead>
                         <tr>
@@ -421,12 +447,6 @@ function GameDetails({
     return (
         <div className="game-details">
             <button onClick={onBack} className="close-button-details">X</button>
-
-            <div className="game-title-row">
-                <h2>{game.title}</h2>
-                <span className='game-code'>{game.gameCode}</span>
-            </div>
-
             {content}
         </div>
     );

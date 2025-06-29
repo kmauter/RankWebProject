@@ -33,6 +33,7 @@ class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('User.id'), nullable=False)
     theme = db.Column(db.String, nullable=False)
+    description = db.Column(db.String, nullable=True)
     stage = db.Column(db.Enum(Stage), nullable=False)
     submission_duedate = db.Column(db.Date, nullable=False)
     rank_duedate = db.Column(db.Date, nullable=False)

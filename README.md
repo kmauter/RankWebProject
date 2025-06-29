@@ -64,7 +64,7 @@ ALSO
 - [X] When submitting a song, if it is successful, it should clear the fields
 - [X] Fix formatting on settings page to emphasize headers
 - [X] User should get some feedback when saving the changed dates.
-- [ ] UI for description viewing
+- [X] UI for description viewing
 
 ## Automation Between
 - [X] When submission due date is passed, trigger Automation
@@ -113,9 +113,7 @@ ALSO
 - [X] Each song avg rank, median rank, range, controversy score, user who submitted
 
 ## During Finished Stage
-- [ ] Display winner and winning song prominently!
 - [X] Display all songs, avg ranking and controversy score, and who submitted what
-- [ ] Allow download for full data
 - [X] Mobile Friendly UI
 
 ## Deployment Setup and Development Processes
@@ -148,6 +146,8 @@ ALSO
 - [ ] Email Verification
 - [ ] Fetch additional song data from spotify (loudness, happiness, etc.) during first stage change
 - [ ] Create a spreadsheet with all stats, ones given above and including additional song data from spotify during second stage change
+- [ ] Allow download for full data
+- [ ] Display winner and winning song prominently!
 
 
 ### Goal POC Date: 8/1

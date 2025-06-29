@@ -195,6 +195,7 @@ def get_user_games():
                 'id': game.id,
                 'title': game.theme,
                 'status': game.stage.value,  # Convert Enum to string
+                'description': game.description,
                 'submissionDueDate': game.submission_duedate.strftime('%Y-%m-%d'),  # Format date as string
                 'rankDueDate': game.rank_duedate.strftime('%Y-%m-%d'),  # Format date as string
                 'gameCode': game.game_code,
@@ -366,6 +367,7 @@ def get_game_details(game_code):
             'id': game.id,
             'title': game.theme,
             'status': game.stage.value,  # Convert Enum to string
+            'description': game.description,
             'submissionDueDate': game.submission_duedate.strftime('%Y-%m-%d'),  # Format date as string
             'rankDueDate': game.rank_duedate.strftime('%Y-%m-%d'),  # Format date as string
             'gameCode': game.game_code,
