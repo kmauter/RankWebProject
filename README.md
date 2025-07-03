@@ -38,9 +38,9 @@ Now that you're all set up, let's run this thing.
 # Roadmap
 
 ## Game Creation
-- [ ] Game creation includes a description
-- [ ] Game creation includes choosing the submission limit
-- [ ] Use main-content format
+- [X] Game creation includes a description
+- [X] Game creation includes choosing the submission limit
+- [X] Use main-content format
 
 ## Game Join
 - [ ] Use main-content format

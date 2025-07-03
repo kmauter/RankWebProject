@@ -235,7 +235,7 @@ function Dashboard() {
         }
     }, [selectedGame]);
 
-    const handleCreateGame = async (theme, submissionDuedate, rankDuedate) => {
+    const handleCreateGame = async (theme, description, submissionDuedate, rankDuedate, maxSubmissionsPerUser) => {
         try {
             const token = localStorage.getItem('authToken'); // Get the JWT token from localStorage
             const response = await fetch('/api/games', {
@@ -246,8 +246,10 @@ function Dashboard() {
                 },
                 body: JSON.stringify({
                     theme,
+                    description,
                     submissionDuedate,
                     rankDuedate,
+                    maxSubmissionsPerUser
                 }),
             });
     

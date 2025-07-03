@@ -5,9 +5,11 @@ function CreateRankPopup({ onClose, onCreate, createdGameCode}) {
     const themeRef = useRef();
     const submissionDuedateRef = useRef();
     const rankDuedateRef = useRef();
+    const descriptionRef = useRef();
+    const submissionLimitRef = useRef();
     return (
-        <>
-            <div className="game-title-row">
+        <div className="create-rank-popup">
+            <div className="create-join-header">
                 <h2>Create a Rank</h2>
                 <button onClick={onClose} className="close-button-details">X</button>
             </div>
@@ -16,14 +18,20 @@ function CreateRankPopup({ onClose, onCreate, createdGameCode}) {
                 onSubmit={(e) => {
                     e.preventDefault();
                     const theme = themeRef.current.value;
+                    const description = descriptionRef.current.value;
                     const submissionDuedate = submissionDuedateRef.current.value;
                     const rankDuedate = rankDuedateRef.current.value;
-                    onCreate(theme, submissionDuedate, rankDuedate);
+                    const submissionLimit = submissionLimitRef.current.value;
+                    onCreate(theme, description, submissionDuedate, rankDuedate, submissionLimit);
                 }}
             >
                 <label>
                     Theme:  
                     <input ref={themeRef} className='input-form' type="text" name="theme" required />
+                </label>
+                <label>
+                    Description:
+                    <textarea ref={descriptionRef} className='input-form' name="description" rows="2" maxLength="200" placeholder="Describe your rank (optional)" />
                 </label>
                 <label>
                     Submission Due Date:  
@@ -33,14 +41,18 @@ function CreateRankPopup({ onClose, onCreate, createdGameCode}) {
                     Rank Due Date:  
                     <input ref={rankDuedateRef} className='input-form' type="date" name="rankDuedate" required />
                 </label>
-                <button type="submit">Create Game</button>
+                <label>
+                    Submission Limit:
+                    <input ref={submissionLimitRef} className='input-form' type="number" name="submissionLimit" min="1" max="50" placeholder="2" />
+                </label>
+                <button type="submit" className="general-button">Create Game</button>
             </form>
             {createdGameCode && (
-                <p>
+                <p className="created-game-code">
                     Game created successfully! Your game code is: {createdGameCode}
                 </p>
             )}
-        </>
+        </div>
     );
 }
 

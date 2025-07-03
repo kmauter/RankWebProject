@@ -151,7 +151,7 @@ function GameDetails({
                                 id="songComment"
                                 name="songComment"
                                 rows={2}
-                                style={{ width: '100%', resize: 'vertical' }}
+                                className="biginput-form"
                                 value={songComment}
                                 onChange={(e) => setSongComment(e.target.value)}
                             />

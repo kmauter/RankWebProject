@@ -99,6 +99,7 @@ def create_game():
     
         data = request.get_json()
         theme = data.get('theme')
+        description = data.get('description')
         submission_duedate = data.get('submissionDuedate')
         rank_duedate = data.get('rankDuedate')
         max_submissions_per_user = data.get('maxSubmissionsPerUser', 2)
@@ -121,12 +122,13 @@ def create_game():
         # Create the game
         new_game = Game(
             theme=theme,
+            description=description,
             stage=Stage.SUBMIT,
             submission_duedate=submission_duedate,
             rank_duedate=rank_duedate,
             game_code=game_code,
             owner_id=user_id,
-            max_submissions_per_user=2  # Default value, can be changed later
+            max_submissions_per_user=max_submissions_per_user
         )
         db.session.add(new_game)
         db.session.commit()
