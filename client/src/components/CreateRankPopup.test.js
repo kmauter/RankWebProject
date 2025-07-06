@@ -12,7 +12,7 @@ describe('CreateRankPopup', () => {
     fireEvent.change(screen.getByLabelText(/Submission Due Date/i), { target: { value: '2025-07-01' } });
     fireEvent.change(screen.getByLabelText(/Rank Due Date/i), { target: { value: '2025-07-10' } });
     fireEvent.click(screen.getByRole('button', { name: /Create Game/i }));
-    expect(onCreate).toHaveBeenCalledWith('Test Theme', '2025-07-01', '2025-07-10');
+    expect(onCreate).toHaveBeenCalledWith('Test Theme', '', '2025-07-01', '2025-07-10', '');
   });
 
   it('renders close button', () => {
