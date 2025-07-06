@@ -545,6 +545,15 @@ function Dashboard() {
                                 createdGameCode={createdGameCode}
                             />
                         </div>
+                    ) : isJoinRankPopupVisible ? (
+                        <div className="game-details-container">
+                            <JoinRankPopup
+                                onClose={() => {
+                                    setJoinRankPopupVisible(false);
+                                }}
+                                onJoin={handleJoinGame} // Pass the join function to the popup
+                            />
+                        </div>
                     ) : (
                         <div className='game-previews-grid'>
                             {gamePreviews.map((game, index) => (
@@ -562,14 +571,14 @@ function Dashboard() {
                     )}
                 </div>
             </main>
-            {isJoinRankPopupVisible && (
+            {/* {isJoinRankPopupVisible && (
                 <JoinRankPopup
                     onClose={() => {
                         setJoinRankPopupVisible(false);
                     }}
                     onJoin={handleJoinGame} // Pass the join function to the popup
                 />
-            )}
+            )} */}
             {/* {isCreateRankPopupVisible && (
                 <CreateRankPopup
                     onClose={() => {

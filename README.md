@@ -43,7 +43,7 @@ Now that you're all set up, let's run this thing.
 - [X] Use main-content format
 
 ## Game Join
-- [ ] Use main-content format
+- [X] Use main-content format
 
 ## During Submission Stage
 - [X] Player can submit a song

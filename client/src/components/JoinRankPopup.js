@@ -2,14 +2,11 @@ import React from "react";
 
 function JoinRankPopup({ onClose, onJoin }) {
     return (
-        <div className="main-popup">
-            <h1
-                className='close-button'
-                onClick={() => {
-                    onClose();
-                }}
-            >X</h1>
-            <h2>Join a Rank</h2>
+        <div className="join-rank-popup">
+            <button onClick={onClose} className="close-button-details">X</button>
+            <div className="create-join-header">
+                <h2>Join a Rank</h2>
+            </div>
             <form
                 className='join-rank-form'
                 onSubmit={(e) => {
@@ -23,7 +20,7 @@ function JoinRankPopup({ onClose, onJoin }) {
                     Game Code:  
                     <input className='input-form' type="text" name="gameCode" required />
                 </label>
-                <button type="submit">Join</button>
+                <button type="submit" className="general-button">Join</button>
             </form>
         </div>
     );
