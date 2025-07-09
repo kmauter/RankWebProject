@@ -28,9 +28,9 @@ def get_user_id_from_token():
     decoded = jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
     return decoded['user_id']
 
-@app.route('/')
+@app.route('/api/')
 def index():
-    return "Hello, World!"
+    return jsonify({"message": "API root"})
 
 @app.route('/register', methods=['POST'])
 def add_user():
