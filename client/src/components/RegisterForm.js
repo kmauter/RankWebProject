@@ -21,7 +21,7 @@ function RegisterForm() {
     const handleRegister = (e) => {
         e.preventDefault();
 
-        axios.post('/register', {
+        axios.post('/api/register', {
             username,
             email,
             password,

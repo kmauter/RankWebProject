@@ -25,7 +25,7 @@ function LoginForm() {
     const handleLogin = (e) => {
         e.preventDefault();
         
-        axios.post('/login', {
+        axios.post('/api/login', {
             username,
             password
         })
