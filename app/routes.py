@@ -32,7 +32,7 @@ def get_user_id_from_token():
 def index():
     return jsonify({"message": "API root"})
 
-@app.route('/register', methods=['POST'])
+@app.route('/api/register', methods=['POST'])
 def add_user():
     data = request.get_json()
     username = data['username']
@@ -57,7 +57,7 @@ def add_user():
 
     return 'User added'
 
-@app.route('/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
     username = data['username']
