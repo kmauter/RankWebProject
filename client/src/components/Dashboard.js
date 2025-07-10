@@ -27,6 +27,11 @@ function Dashboard() {
 
     const { user, logout } = useContext(UserContext); // Assuming you have a UserContext to get user info
 
+    const API_BASE_URL =
+        process.env.NODE_ENV === "production"
+            ? "https://rankwebgame.com/api"
+            : "http://127.0.0.1:5000/api";
+
     // const gamePreviews = [
     //     { title: 'Songs About Capitalism', status: 'submissions' , dueDate: 'May 5' },
     //     { title: 'Songs Under 2 Mins', status: 'rankings', dueDate: 'May 7' },
@@ -448,7 +453,7 @@ function Dashboard() {
             alert("You must be logged in to connect Spotify.");
             return;
         }
-        window.open(`http://127.0.0.1:5000/api/connect-spotify?user_id=${user.user_id}`, "_blank", "noopener,noreferrer");
+        window.open(`${API_BASE_URL}/connect-spotify?user_id=${user.user_id}`, "_blank", "noopener,noreferrer");
     };
 
     const handleYouTubeConnect = () => {
@@ -456,7 +461,7 @@ function Dashboard() {
             alert("You must be logged in to connect YouTube.");
             return;
         }
-        window.open(`http://127.0.0.1:5000/api/connect-youtube?user_id=${user.user_id}`, "_blank", "noopener,noreferrer");
+        window.open(`${API_BASE_URL}/connect-youtube?user_id=${user.user_id}`, "_blank", "noopener,noreferrer");
     };
 
     return (
