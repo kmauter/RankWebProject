@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from app.config import Config
+from app.tasks import start_scheduler
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -10,5 +11,6 @@ app.secret_key = app.config["SECRET_KEY"]  # Set secret key immediately after co
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+start_scheduler()
 
 from app import routes, models  # Import routes after secret key is set
