@@ -117,17 +117,17 @@ ALSO
 - [X] Mobile Friendly UI
 
 ## Deployment Setup and Development Processes
-- [ ] Set up a cloud server (e.g., DigitalOcean Droplet) and connect via SSH
-- [ ] Install all required software (Python, Node.js, Nginx, Git, etc.) on the server
-- [ ] Clone the project repository onto the server
-- [ ] Set up and activate a Python virtual environment for the backend
-- [ ] Install backend dependencies and configure environment variables/secrets
-- [ ] Build the frontend React app for production use
-- [ ] Configure Flask to serve the built frontend files
-- [ ] Set up Gunicorn to serve the Flask backend as a service
-- [ ] Configure Nginx as a reverse proxy to Gunicorn for production traffic
-- [ ] Set up a domain name and HTTPS with Let's Encrypt
-- [ ] Test the deployed site to ensure all services are running correctly
+- [X] Set up a cloud server (e.g., DigitalOcean Droplet) and connect via SSH
+- [X] Install all required software (Python, Node.js, Nginx, Git, etc.) on the server
+- [X] Clone the project repository onto the server
+- [X] Set up and activate a Python virtual environment for the backend
+- [X] Install backend dependencies and configure environment variables/secrets
+- [X] Build the frontend React app for production use
+- [X] Configure nginx to serve the built frontend files
+- [X] Set up Gunicorn to serve the Flask backend as a service
+- [X] Configure Nginx as a reverse proxy to Gunicorn for production traffic
+- [X] Set up a domain name and HTTPS with Let's Encrypt
+- [X] Test the deployed site to ensure all services are running correctly
 - [ ] Set up Docker for consistent development and deployment environments
 - [ ] Implement a CI/CD pipeline for automated testing and deployment
 - [ ] Document any environment variables, secrets, or special setup steps for future development

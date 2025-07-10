@@ -4,3 +4,6 @@ flask_migrate
 psycopg2-binary
 python-dotenv
 APScheduler
+spotipy
+google-api-python-client
+google-auth-oauthlib
