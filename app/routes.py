@@ -9,6 +9,7 @@ import random
 import string
 import requests
 from app.config import Config
+from app import limiter
 from dotenv import load_dotenv
 from urllib.parse import urlencode
 load_dotenv()
@@ -33,31 +34,63 @@ def index():
     return jsonify({"message": "API root"})
 
 @app.route('/api/register', methods=['POST'])
+@limiter.limit("5 per minute")
 def add_user():
     data = request.get_json()
-    username = data['username']
-    email = data['email']
-    password = data['password']  # This should be hashed
-    password2 = data['password2'] 
+    username = data.get('username', '').strip()
+    email = data.get('email', '').strip()
+    password = data.get('password', '')
+    password2 = data.get('password2', '')
+
+    # Validate required fields
+    if not username:
+        return jsonify({'error': 'Username is required'}), 400
+
+    if not email:
+        return jsonify({'error': 'Email is required'}), 400
+
+    if not password:
+        return jsonify({'error': 'Password is required'}), 400
+
+    # Length and character validation
+    if len(username) > 30:
+        return jsonify({'error': 'Username must be 30 characters or fewer'}), 400
+
+    if len(username) < 3:
+        return jsonify({'error': 'Username must be at least 3 characters'}), 400
+
+    if not username.isalnum() and not all(c.isalnum() or c in '_-' for c in username):
+        return jsonify({'error': 'Username can only contain letters, numbers, hyphens, and underscores'}), 400
+
+    if len(email) > 120:
+        return jsonify({'error': 'Email must be 120 characters or fewer'}), 400
+
+    if '@' not in email or '.' not in email.split('@')[-1]:
+        return jsonify({'error': 'Invalid email format'}), 400
+
+    if len(password) < 6:
+        return jsonify({'error': 'Password must be at least 6 characters'}), 400
 
     if password != password2:
-        return 'Passwords do not match'
+        return jsonify({'error': 'Passwords do not match'}), 400
 
     # Check if user already exists
-    user = User.query.filter_by(username=username).first()
+    if User.query.filter_by(username=username).first():
+        return jsonify({'error': 'User already exists'}), 400
 
-    if user:
-        return 'User already exists'
-    
+    if User.query.filter_by(email=email).first():
+        return jsonify({'error': 'Email already registered'}), 400
+
     # Create new user
     user = User(username=username, email=email)
     user.set_password(password)
     db.session.add(user)
     db.session.commit()
 
-    return 'User added'
+    return jsonify({'message': 'User registered successfully'}), 201
 
 @app.route('/api/login', methods=['POST'])
+@limiter.limit("10 per minute")
 def login():
     data = request.get_json()
     username = data['username']
@@ -225,12 +258,20 @@ def submit_song_to_game():
         
         data = request.get_json()
         game_code = data.get('game_code')
-        title = data.get('song_name')
-        artist = data.get('artist')
-        comment = data.get('comment')
+        title = data.get('song_name', '').strip()
+        artist = data.get('artist', '').strip()
+        comment = data.get('comment', '').strip() if data.get('comment') else None
         
         if not game_code or not title or not artist:
             return jsonify({'error': 'Missing required fields'}), 400
+
+        # Length validation
+        if len(title) > 200:
+            return jsonify({'error': 'Song title must be 200 characters or fewer'}), 400
+        if len(artist) > 200:
+            return jsonify({'error': 'Artist name must be 200 characters or fewer'}), 400
+        if comment and len(comment) > 500:
+            return jsonify({'error': 'Comment must be 500 characters or fewer'}), 400
         
         # Find the game by game code
         game = Game.query.filter_by(game_code=game_code).first()
@@ -503,10 +544,13 @@ def remove_player_from_game(game_code, remove_user_id):
     
 @app.route('/api/connect-spotify', methods=['GET'])
 def connect_spotify():
-    user_id = request.args.get('user_id')
-    if not user_id:
-        return jsonify({'error': 'Missing user_id'}), 400
-    # Use OAuth2 state parameter to pass user_id
+    try:
+        user_id = get_user_id_from_token()
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception:
+        return jsonify({'error': 'Authentication required'}), 401
+
     state = str(user_id)
     params = {
         "client_id": SPOTIFY_CLIENT_ID,
@@ -516,7 +560,6 @@ def connect_spotify():
         "state": state,
     }
     auth_url = "https://accounts.spotify.com/authorize?" + urlencode(params)
-    print("Spotify auth_url:", auth_url)
     return redirect(auth_url)
 
 @app.route('/api/spotifycallback')
@@ -551,9 +594,13 @@ def spotify_callback():
 
 @app.route('/api/connect-youtube', methods=['GET'])
 def connect_youtube():
-    user_id = request.args.get('user_id')
-    if not user_id:
-        return jsonify({'error': 'Missing user_id'}), 400
+    try:
+        user_id = get_user_id_from_token()
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except Exception:
+        return jsonify({'error': 'Authentication required'}), 401
+
     state = str(user_id)
     params = {
         "client_id": YOUTUBE_CLIENT_ID,
@@ -565,7 +612,6 @@ def connect_youtube():
         "state": state,
     }
     auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
-    print("YouTube auth_url:", auth_url)
     return redirect(auth_url)
 
 @app.route('/api/youtubecallback')

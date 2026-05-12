@@ -391,8 +391,7 @@ function GameDetails({
         );
     } else if (status === 'results') {
         const sortedSongs = [...songs]
-            .sort((a, b) => (a.finalRank || 999) - (b.finalRank || 999))
-            .reverse();
+            .sort((a, b) => (a.avg_rank || 999) - (b.avg_rank || 999));
 
         content = (
             <>
@@ -417,7 +416,7 @@ function GameDetails({
                     <tbody>
                         {sortedSongs.map((song, idx) => (
                             <tr key={song.id}>
-                                <td data-label="Rank">{song.finalRank || idx + 1}</td>
+                                <td data-label="Rank">{idx + 1}</td>
                                 <td data-label="Song">{song.song_name || song.title}</td>
                                 <td data-label="Artist">{song.artist}</td>
                                 <td data-label="Submitted By">{song.user?.username || 'Unknown'}</td>

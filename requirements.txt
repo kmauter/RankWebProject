@@ -1,9 +1,12 @@
 flask
 flask_sqlalchemy
 flask_migrate
+flask-limiter
 psycopg2-binary
 python-dotenv
 APScheduler
 spotipy
+PyJWT
 google-api-python-client
 google-auth-oauthlib
+werkzeug

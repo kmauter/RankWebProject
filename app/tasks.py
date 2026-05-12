@@ -10,12 +10,12 @@ from collections import defaultdict
 
 def update_game_stages():
     with app.app_context():
-        now = datetime.now(timezone.utc)
+        today = datetime.now(timezone.utc).date()
         
         # ROLL GAMES OVER FROM RANK TO DONE STAGE 
         games = Game.query.filter(
             Game.stage == Stage.RANK,
-            Game.rank_duedate <= now
+            Game.rank_duedate <= today
         ).all()
         for game in games:
             db.session.add(game)
@@ -70,7 +70,7 @@ def update_game_stages():
         # ROLL GAMES OVER FROM SUBMIT TO RANK STAGE
         games = Game.query.filter(
             Game.stage == Stage.SUBMIT,
-            Game.submission_duedate <= now
+            Game.submission_duedate <= today
         ).all()
         for game in games:
             db.session.add(game)
