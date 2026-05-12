@@ -63,6 +63,9 @@ describe('LoginForm', () => {
 
         await waitFor(() => {
             expect(localStorage.getItem('authToken')).toBe(fakeToken);
+        });
+
+        await waitFor(() => {
             expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
         });
     });
