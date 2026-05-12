@@ -13,8 +13,8 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 limiter = Limiter(get_remote_address, app=app, default_limits=[])
 
-from app import routes, models  # Import routes and models after db and migrate are initialized
-from app.tasks import start_scheduler
+from app import routes as routes, models as models  # noqa: E402 — must import after db init
+from app.tasks import start_scheduler  # noqa: E402
 
 # Don't start the scheduler during tests.
 # In production with Gunicorn, use --preload flag or run scheduler as a separate process

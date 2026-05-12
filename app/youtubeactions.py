@@ -1,7 +1,3 @@
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-import pickle
 import os
 import requests
 from dotenv import load_dotenv
@@ -86,7 +82,7 @@ def create_youtube_playlist_for_game(game, songs, playlist_name, youtube_refresh
             if not video_id:
                 print(f"No video found for song '{query}'. Skipping.")
                 continue
-            
+
             add_body = {
                 "snippet": {
                     "playlistId": playlist_id,

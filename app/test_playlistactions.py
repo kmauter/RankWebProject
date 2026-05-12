@@ -1,5 +1,4 @@
 from app.spotifyactions import create_spotify_playlist_for_game
-from app.youtubeactions import create_youtube_playlist_for_game
 
 class MockSong:
     def __init__(self, title, artist):
@@ -10,7 +9,7 @@ class MockGame:
     def __init__(self, id, theme):
         self.id = id
         self.theme = theme
-        
+
 SPOTIFY_REFRESH_TOKEN = "..."
 YOUTUBE_REFRESH_TOKEN = "..."
 
