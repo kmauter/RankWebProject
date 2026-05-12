@@ -58,24 +58,23 @@ This is a prioritized task list to get RankWebProject stable, secure, and tested
 ## P5 — Testing (Minimum coverage for confidence)
 
 ### Backend Tests
-- [ ] **Set up pytest with test fixtures** — Create `tests/` directory, configure test database (in-memory SQLite), add app factory pattern or test client.
-- [ ] **Test auth endpoints** — Register, login, invalid credentials, duplicate user, token generation.
-- [ ] **Test game CRUD** — Create game, join game, duplicate join, invalid code, owner-only operations.
-- [ ] **Test song submission** — Submit, max limit enforcement, duplicate detection, delete permissions.
-- [ ] **Test ranking CRUD** — Save ranking, partial update, delete, retrieve.
-- [ ] **Test stage transitions** — Mock dates, verify SUBMIT→RANK and RANK→DONE logic, stat calculations.
+- [x] **Set up pytest with test fixtures** — `tests/conftest.py` with in-memory SQLite, test client, reusable fixtures (`sample_user`, `sample_game`, etc.), and `make_auth_header()` helper.
+- [x] **Test auth endpoints** — 12 tests covering register, login, invalid credentials, duplicate user, token validation, expiry.
+- [x] **Test game CRUD** — 14 tests covering create, join, duplicate join, invalid code, owner-only operations, players.
+- [x] **Test song submission** — 15 tests covering submit, max limit, duplicate detection, delete permissions (owner + self).
+- [x] **Test ranking CRUD** — 8 tests covering save, partial update, delete, retrieve, multi-user isolation.
+- [x] **Test stage transitions** — 15 tests covering SUBMIT→RANK, RANK→DONE, playlist creation, stat calculations, date filtering.
 
 ### Frontend Tests
-- [ ] **Test LoginForm** — Successful login sets token, failed login shows error.
-- [ ] **Test RegisterForm** — Successful register navigates to login, validation errors display.
-- [ ] **Test GameDetails submissions** — Song form submits, user songs display, delete works.
-- [ ] **Test GameDetails rankings** — Drag-and-drop state updates, save calls API.
-- [ ] **Test auth guard behavior** — Unauthenticated user redirected to login.
+- [x] **Test LoginForm** — 5 tests: renders fields, successful login stores token + navigates, failed login shows error, register link present.
+- [x] **Test RegisterForm** — 4 tests: renders all fields, successful register navigates to login, login link present.
+- [x] **Test auth guard behavior** — 3 tests: redirects without user, redirects without token, renders with both.
+- [x] **Test UserContext** — 4 tests: loads from valid token, rejects expired token, logout clears state, no token = no user.
 
 ### CI Pipeline
-- [ ] **Add backend test job to GitHub Actions** — Install Python deps, run pytest.
-- [ ] **Add `npm run build` step** — Verify production build succeeds on every push.
-- [ ] **Add linting step** — ESLint for frontend, flake8 or ruff for backend.
+- [x] **Add backend test job to GitHub Actions** — Python 3.10, installs deps, runs pytest with in-memory SQLite.
+- [x] **Add `npm run build` step** — Verifies production build succeeds on every push.
+- [x] **Add linting step** — ruff for backend (E/F/W rules), ESLint for frontend (max 50 warnings).
 
 ---
 

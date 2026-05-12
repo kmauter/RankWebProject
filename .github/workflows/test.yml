@@ -1,18 +1,76 @@
-name: Run Tests
+name: Test Suite
 
 on: [push, pull_request]
 
 jobs:
-  test:
+  backend:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
-    - run: npm ci
-      working-directory: ./client
-    - run: npm test
-      working-directory: ./client
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest pytest-flask PyJWT
+
+      - name: Run backend tests
+        run: pytest tests/ -v
+        env:
+          SECRET_KEY: test-secret-key
+          DATABASE_URL: "sqlite:///:memory:"
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - name: Run frontend tests
+        working-directory: ./client
+        run: npx react-scripts test --watchAll=false --ci
+
+      - name: Verify production build
+        working-directory: ./client
+        run: npm run build
+        env:
+          CI: true
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Lint backend
+        run: ruff check app/ --select E,F,W --ignore E501
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install frontend dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - name: Lint frontend
+        working-directory: ./client
+        run: npx eslint src/ --max-warnings 50
