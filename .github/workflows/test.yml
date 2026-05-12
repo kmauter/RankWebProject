@@ -17,10 +17,10 @@ jobs:
         run: pip install -r requirements.txt pytest pytest-flask PyJWT
 
       - name: Run backend tests
+        run: pytest tests/ -v
         env:
           SECRET_KEY: test-secret-key
-          DATABASE_URL: sqlite:///:memory:
-        run: pytest tests/ -v
+          DATABASE_URL: "sqlite:///:memory:"
 
   frontend:
     runs-on: ubuntu-latest
