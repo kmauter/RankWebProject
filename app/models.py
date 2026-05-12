@@ -56,8 +56,8 @@ class GameUser(db.Model):
     __tablename__ = 'GameUser'
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    game_id = db.Column(db.Integer, db.ForeignKey('Game.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('User.id'), nullable=False)
+    game_id = db.Column(db.Integer, db.ForeignKey('Game.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('User.id'), nullable=False, index=True)
     
     __table_args__ = (
         db.UniqueConstraint('game_id', 'user_id', name='uq_game_user'),
@@ -70,8 +70,8 @@ class Song(db.Model):
     __tablename__ = 'Song'
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('User.id'), nullable=False)
-    game_id = db.Column(db.Integer, db.ForeignKey('Game.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('User.id'), nullable=False, index=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('Game.id'), nullable=False, index=True)
     title = db.Column(db.String, nullable=False)
     artist = db.Column(db.String, nullable=False)
     comment = db.Column(db.String, nullable=True)
@@ -89,8 +89,8 @@ class Rank(db.Model):
     __tablename__ = 'Rank'
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    game_id = db.Column(db.Integer, db.ForeignKey('Game.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('User.id'), nullable=False)
+    game_id = db.Column(db.Integer, db.ForeignKey('Game.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('User.id'), nullable=False, index=True)
     song_id = db.Column(db.Integer, db.ForeignKey('Song.id'), nullable=False)
     rank_position = db.Column(db.Integer, nullable=False)
     

@@ -1,8 +1,9 @@
 from app import app, db
 from app.models import User, Game, GameUser, Song, Rank, Stage, SongStat
-from flask import request, redirect, url_for, session
+from flask import request, redirect, url_for, session, g
 from flask import jsonify
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from functools import wraps
 import os
 import jwt
 import random
@@ -23,6 +24,27 @@ YOUTUBE_CLIENT_ID = os.environ.get("YOUTUBE_CLIENT_ID")
 YOUTUBE_CLIENT_SECRET = os.environ.get("YOUTUBE_CLIENT_SECRET")
 YOUTUBE_REDIRECT_URI = os.environ.get("YOUTUBE_REDIRECT_URI")
 YOUTUBE_SCOPES = "https://www.googleapis.com/auth/youtube"
+
+
+def require_auth(f):
+    """Decorator that extracts user_id from JWT and stores it in g.user_id.
+    Returns 401 JSON response if token is missing, expired, or invalid."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({'error': 'Authentication required'}), 401
+        try:
+            token = auth_header.split(" ")[1]
+            decoded = jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
+            g.user_id = decoded['user_id']
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token has expired'}), 401
+        except Exception:
+            return jsonify({'error': 'Invalid token'}), 401
+        return f(*args, **kwargs)
+    return decorated
+
 
 def get_user_id_from_token():
     token = request.headers.get('Authorization').split(" ")[1]
@@ -103,7 +125,7 @@ def login():
         token = jwt.encode(
             {
                 'user_id': user.id,
-                'exp': datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
+                'exp': datetime.now(timezone.utc) + timedelta(hours=24)
             },
             Config.SECRET_KEY,
             algorithm='HS256'
@@ -224,20 +246,24 @@ def get_user_games():
         # Query the Game table to get details of the games
         games = Game.query.filter(Game.id.in_(game_ids)).all()
 
+        # Batch-fetch all owner users to avoid N+1 queries
+        owner_ids = {game.owner_id for game in games if game.owner_id}
+        owners = {u.id: u for u in User.query.filter(User.id.in_(owner_ids)).all()}
+
         # Serialize the game data
         game_data = [
             {
                 'id': game.id,
                 'title': game.theme,
-                'status': game.stage.value,  # Convert Enum to string
+                'status': game.stage.value,
                 'description': game.description,
-                'submissionDueDate': game.submission_duedate.strftime('%Y-%m-%d'),  # Format date as string
-                'rankDueDate': game.rank_duedate.strftime('%Y-%m-%d'),  # Format date as string
+                'submissionDueDate': game.submission_duedate.strftime('%Y-%m-%d'),
+                'rankDueDate': game.rank_duedate.strftime('%Y-%m-%d'),
                 'gameCode': game.game_code,
                 'maxSubmissionsPerUser': game.max_submissions_per_user,
                 'owner': {
                     'id': game.owner_id,
-                    'username': (User.query.get(game.owner_id).username if (game.owner_id and User.query.get(game.owner_id)) else None)
+                    'username': owners.get(game.owner_id, None) and owners[game.owner_id].username
                 },
                 'spotifyPlaylistUrl': game.spotify_playlist_url,
                 'youtubePlaylistUrl': game.youtube_playlist_url
@@ -446,11 +472,20 @@ def get_game_songs_details(game_code):
         # Get all songs for this game
         songs = Song.query.filter_by(game_id=game.id).all()
         
+        # Batch-fetch users and stats to avoid N+1 queries
+        song_user_ids = {song.user_id for song in songs if song.user_id}
+        users = {u.id: u for u in User.query.filter(User.id.in_(song_user_ids)).all()}
+        
+        song_ids = [song.id for song in songs]
+        stats = {s.song_id: s for s in SongStat.query.filter(
+            SongStat.song_id.in_(song_ids), SongStat.game_id == game.id
+        ).all()}
+        
         # Serialize the song data
         song_data = []
         for song in songs:
-            stat = SongStat.query.filter_by(song_id=song.id, game_id=game.id).first()
-            print(stat)
+            stat = stats.get(song.id)
+            song_user = users.get(song.user_id)
             song_data.append({
                 'id': song.id,
                 'song_name': song.title,
@@ -458,7 +493,7 @@ def get_game_songs_details(game_code):
                 'comment': song.comment,
                 'user': {
                     'id': song.user_id,
-                    'username': User.query.get(song.user_id).username if song.user_id else None
+                    'username': song_user.username if song_user else None
                 },
                 'avg_rank': stat.avg_rank if stat else None,
                 'median_rank': stat.median_rank if stat else None,
@@ -481,8 +516,9 @@ def delete_song(song_id):
             return jsonify({'error': 'Song not found'}), 404
         
         game = Game.query.get(song.game_id)
-        if not game or game.owner_id != user_id:
-            return jsonify({'error': 'Only the game owner can delete songs.'}), 403
+        # Allow deletion if user is the game owner OR the song's submitter
+        if not game or (game.owner_id != user_id and song.user_id != user_id):
+            return jsonify({'error': 'You do not have permission to delete this song.'}), 403
         
         db.session.delete(song)
         db.session.commit()
@@ -505,10 +541,13 @@ def get_game_players(game_code):
             return jsonify({'error': 'User is not part of the game'}), 403
         
         players = GameUser.query.filter_by(game_id=game.id).all()
+        player_user_ids = [p.user_id for p in players if p.user_id]
+        users = {u.id: u for u in User.query.filter(User.id.in_(player_user_ids)).all()}
+        
         player_data = [
             {
                 'id': player.user_id,
-                'username': User.query.get(player.user_id).username if player.user_id else None
+                'username': users[player.user_id].username if player.user_id and player.user_id in users else None
             }
             for player in players
         ]
