@@ -225,6 +225,7 @@ function Dashboard() {
             fetchSongs(selectedGame.gameCode);
             fetchPlayers(selectedGame.gameCode);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showGameSettings]);
 
     useEffect(() => {

@@ -3,7 +3,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import App from './App';
-import reportWebVitals from './reportWebVitals';
 import './styles/index.css';
 import { UserProvider } from './contexts/UserContext';
 import { installGlobal401Handler } from './utils/api';
