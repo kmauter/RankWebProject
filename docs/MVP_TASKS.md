@@ -25,21 +25,21 @@ This is a prioritized task list to get RankWebProject stable, secure, and tested
 
 ## P2 — Auth & Session Stability
 
-- [ ] **Add auth guard on `/dashboard` route** — Redirect to login if no valid token exists. Check token expiry on mount.
-- [ ] **Handle 401 responses globally on frontend** — When any API call returns 401, clear token and redirect to login with a message.
-- [ ] **Extend JWT expiry or add refresh tokens** — 1 hour is too short for a game session. Either extend to 24h+ or implement a `/api/refresh-token` endpoint.
-- [ ] **Decode and validate token expiry in `UserContext`** — On app load, check if stored token is expired before setting user state.
+- [x] **Add auth guard on `/dashboard` route** — Created `ProtectedRoute` component that checks for valid user/token in context. Wraps the Dashboard route in App.js — redirects to login if not authenticated.
+- [x] **Handle 401 responses globally on frontend** — Created `installGlobal401Handler()` in `utils/api.js` that monkey-patches `window.fetch` to intercept 401 responses from `/api/*` endpoints, clear the token, and redirect to login. Installed in `index.js` at app startup.
+- [x] **Extend JWT expiry or add refresh tokens** — Extended JWT expiry from 1 hour to 24 hours. Sufficient for game sessions without the complexity of refresh tokens.
+- [x] **Decode and validate token expiry in `UserContext`** — On app load, `UserContext` now checks `exp` claim against current time. If expired, clears token from localStorage and does not set user state.
 
 ---
 
 ## P3 — Data Integrity & Backend Robustness
 
-- [ ] **Add a shared auth decorator** — Replace duplicated try/except JWT handling in every route with a `@require_auth` decorator.
-- [ ] **Fix N+1 queries** — In `get_user_games` and `get_game_songs_details`, use `joinedload` or batch queries instead of `User.query.get()` in loops.
-- [ ] **Allow users to delete their own song submissions** — Currently only the game owner can delete songs. Users should be able to delete their own during submission stage.
-- [ ] **Add database indexes** — Add indexes on `GameUser.user_id`, `Song.game_id`, `Rank.game_id`, `Rank.user_id` for query performance.
-- [ ] **Pin dependency versions in `requirements.txt`** — Run `pip freeze > requirements.txt` to lock versions.
-- [ ] **Replace deprecated `datetime.utcnow()`** — Use `datetime.now(timezone.utc)` consistently (already used in tasks.py, not in routes.py).
+- [x] **Add a shared auth decorator** — Created `@require_auth` decorator in `routes.py` that extracts `user_id` from JWT into `g.user_id`, returns 401 JSON for missing/expired/invalid tokens. Available for gradual migration of existing routes.
+- [x] **Fix N+1 queries** — Replaced `User.query.get()` inside loops with batch queries in `get_user_games`, `get_game_songs_details`, and `get_game_players`. Users and stats are now fetched in single queries and looked up from dictionaries.
+- [x] **Allow users to delete their own song submissions** — Updated delete song endpoint to allow deletion if user is the game owner OR the song's original submitter. Non-owners can only delete their own songs.
+- [x] **Add database indexes** — Added `index=True` on `GameUser.user_id`, `GameUser.game_id`, `Song.user_id`, `Song.game_id`, `Rank.game_id`, `Rank.user_id` for query performance. Requires `flask db migrate` + `flask db upgrade` on deploy.
+- [x] **Pin dependency versions in `requirements.txt`** — All dependencies now pinned to exact versions (e.g., `Flask==3.1.0`, `SQLAlchemy==2.0.40`).
+- [x] **Replace deprecated `datetime.utcnow()`** — Login route now uses `datetime.now(timezone.utc)` consistently with tasks.py.
 
 ---
 
