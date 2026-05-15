@@ -12,7 +12,6 @@ function JoinRankPopup({ onClose, onJoin }) {
                 onSubmit={(e) => {
                     e.preventDefault();
                     const gameCode = e.target.gameCode.value;
-                    console.log('Game code:', gameCode);
                     onJoin(gameCode); // Call the join function with the game code
                 }}
             >

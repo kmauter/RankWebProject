@@ -990,3 +990,106 @@ textarea.input-form {
     padding: 0em;
   }
 }
+
+/* Notification banner */
+.notification-banner {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-family: 'HandFont', var(--font-family-sans);
+  font-size: 1rem;
+  font-weight: bold;
+  z-index: 9999;
+  animation: slideDown 0.3s ease-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.notification-banner.error {
+  background-color: var(--primary-red);
+  color: var(--white);
+}
+
+.notification-banner.success {
+  background-color: var(--primary-green);
+  color: var(--white);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Confirmation dialog */
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.confirm-dialog {
+  background: var(--white);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  font-family: 'HandFont', var(--font-family-sans);
+  text-align: center;
+  max-width: 350px;
+  width: 90%;
+}
+
+.confirm-message {
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  color: var(--black);
+}
+
+.confirm-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.confirm-btn {
+  font-family: 'HandFont', var(--font-family-sans);
+  font-size: 1.1rem;
+  padding: 0.5rem 1.5rem;
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color var(--transition-speed);
+}
+
+.confirm-btn.cancel {
+  background-color: var(--background-color);
+  color: var(--black);
+}
+
+.confirm-btn.cancel:hover {
+  background-color: #ddd;
+}
+
+.confirm-btn.confirm {
+  background-color: var(--primary-red);
+  color: var(--white);
+}
+
+.confirm-btn.confirm:hover {
+  background-color: var(--secondary-red);
+}

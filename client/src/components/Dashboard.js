@@ -8,6 +8,7 @@ import GameDetails from './GameDetails';
 import { UserContext } from '../contexts/UserContext';
 import GameSettings from './GameSettings';
 import SettingsPopup from './SettingsPopup';
+import ConfirmDialog from './ConfirmDialog';
 
 function Dashboard() {
     const [isUserMenuVisible, setUserMenuVisible] = useState(false);
@@ -24,8 +25,15 @@ function Dashboard() {
     const [rankDueDate, setRankDueDate] = useState('');
     const [userSongs, setUserSongs] = useState([]);
     const [userRanking, setUserRanking] = useState([]);
+    const [notification, setNotification] = useState(null); // { message, type: 'error' | 'success' }
+    const [confirmDialog, setConfirmDialog] = useState(null); // { message, onConfirm }
 
-    const { user, logout } = useContext(UserContext); // Assuming you have a UserContext to get user info
+    const { user, logout } = useContext(UserContext);
+
+    const showNotification = (message, type = 'error') => {
+        setNotification({ message, type });
+        setTimeout(() => setNotification(null), 4000);
+    }; // Assuming you have a UserContext to get user info
 
     const API_BASE_URL =
         process.env.NODE_ENV === "production"
@@ -40,35 +48,35 @@ function Dashboard() {
     // ];
 
     const handleUserIconClick = () => {
-        console.log('User icon clicked!');
         console.log('User:', user); // Log user info for debugging
         setUserMenuVisible(!isUserMenuVisible);
     };
 
     const handleSettingsClick = () => {
-        console.log('Settings clicked!');
         setSettingsPopupVisible(!isSettingsPopupVisible);
     };
 
     const handleGameClick = (game) => {
-        console.log('Game clicked:', game);
         fetchSongs(game.gameCode);
         setSelectedGame(game);
     };
 
     const handleLogout = () => {
-        console.log('User logged out!');
-        logout();
-        window.location.href = '/';
+        setConfirmDialog({
+            message: 'Are you sure you want to log out?',
+            onConfirm: () => {
+                setConfirmDialog(null);
+                logout();
+                window.location.href = '/';
+            }
+        });
     };
 
     const handleJoinClick = () => {
-        console.log('Join a rank clicked!');
         setJoinRankPopupVisible(!isJoinRankPopupVisible);
     };
 
     const handleCreateClick = () => {
-        console.log('Create a rank clicked!');
         setCreateRankPopupVisible(!isCreateRankPopupVisible);
     };
 
@@ -90,11 +98,9 @@ function Dashboard() {
                 console.log('Fetched games:', data); // Log the fetched games for debugging
                 setGamePreviews(data); // Update the state with the fetched games
             } else {
-                console.error('Failed to fetch games');
                 window.location.href = '/';
             }
         } catch (error) {
-            console.error('Error fetching games:', error);
         }
     };
 
@@ -114,7 +120,6 @@ function Dashboard() {
                 setUserSongs([]);
             }
         } catch (error) {
-            console.error('Error fetching user songs:', error);
             setUserSongs([]);
         }
     };
@@ -137,11 +142,9 @@ function Dashboard() {
                 setSubmissionDueDate(data.submissionDueDate);
                 setRankDueDate(data.rankDueDate);
             } else {
-                console.error('Failed to fetch game details');
                 setSelectedGame(null); // Reset selected game if fetching fails
             }
         } catch (error) {
-            console.error('Error fetching game details:', error);
             setSelectedGame(null); // Reset selected game if fetching fails
         }
     };
@@ -161,11 +164,9 @@ function Dashboard() {
                 const data = await response.json();
                 setSongs(data); // Update the state with the fetched songs
             } else {
-                console.error('Failed to fetch songs');
                 setSongs([]); // Optionally clear songs on failure
             }
         } catch (error) {
-            console.error('Error fetching songs:', error);
             setSongs([]); // Optionally clear songs on error
         }
     };
@@ -185,11 +186,9 @@ function Dashboard() {
                 const data = await response.json();
                 setPlayers(data); // Update the state with the fetched players
             } else {
-                console.error('Failed to fetch players');
                 setPlayers([]); // Optionally clear players on failure
             }
         } catch (error) {
-            console.error('Error fetching players:', error);
             setPlayers([]); // Optionally clear players on error
         }
     };
@@ -261,15 +260,14 @@ function Dashboard() {
     
             if (response.ok) {
                 const data = await response.json();
-                console.log('Game created successfully:', data);
                 setCreatedGameCode(data.game_code);
-                // setCreateRankPopupVisible(false);
                 fetchGames(); // Refresh the game previews after creating a new game
             } else {
-                console.error('Failed to create game');
+                const data = await response.json();
+                showNotification(data.error || 'Failed to create game');
             }
         } catch (error) {
-            console.error('Error creating game:', error);
+            showNotification('Error creating game. Please try again.');
         }
     };
 
@@ -288,13 +286,13 @@ function Dashboard() {
             });
     
             if (response.ok) {
-                console.log('Successfully joined the game');
                 fetchGames(); // Refresh the game previews after joining a new game
             } else {
-                console.error('Failed to join game');
+                const data = await response.json();
+                showNotification(data.error || 'Failed to join game');
             }
         } catch (error) {
-            console.error('Error joining game:', error);
+            showNotification('Error joining game. Please try again.');
         }
     }
 
@@ -315,62 +313,80 @@ function Dashboard() {
                 }),
             });
             if (response.ok) {
-                console.log('Song submitted successfully');
                 // refresh the songs list after submission
                 fetchSongs(selectedGame.gameCode);
                 fetchUserSongs(selectedGame.gameCode);
             } else {
-                console.error('Failed to submit song');
+                const data = await response.json();
+                showNotification(data.error || 'Failed to submit song');
             }
         } catch (error) {
-            console.error('Error submitting song:', error);
+            showNotification('Error submitting song. Please try again.');
         }
     }
 
-    const handleDeleteSong = async (songId) => {
+    const handleDeleteSong = (songId) => {
+        setConfirmDialog({
+            message: 'Delete this song?',
+            onConfirm: () => {
+                setConfirmDialog(null);
+                performDeleteSong(songId);
+            }
+        });
+    };
+
+    const performDeleteSong = async (songId) => {
         try {
-            const token = localStorage.getItem('authToken'); // Get the JWT token from localStorage
+            const token = localStorage.getItem('authToken');
             const response = await fetch(`/api/song/${songId}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
             });
 
             if (response.ok) {
-                console.log('Song deleted successfully');
-                // Optionally, refresh the songs list after deletion
                 fetchSongs(selectedGame.gameCode);
                 fetchUserSongs(selectedGame.gameCode);
             } else {
-                console.error('Failed to delete song');
+                const data = await response.json().catch(() => ({}));
+                showNotification(data.error || 'Failed to delete song');
             }
         } catch (error) {
-            console.error('Error deleting song:', error);
+            showNotification('Error deleting song. Please try again.');
         }
     }
 
-    const handleRemovePlayer = async (gameCode, playerId) => {
+    const handleRemovePlayer = (gameCode, playerId) => {
+        setConfirmDialog({
+            message: 'Remove this player from the game?',
+            onConfirm: () => {
+                setConfirmDialog(null);
+                performRemovePlayer(gameCode, playerId);
+            }
+        });
+    };
+
+    const performRemovePlayer = async (gameCode, playerId) => {
         try {
-            const token = localStorage.getItem('authToken'); // Get the JWT token from localStorage
+            const token = localStorage.getItem('authToken');
             const response = await fetch(`/api/game/${encodeURIComponent(gameCode)}/player/${playerId}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
             });
 
             if (response.ok) {
-                console.log('Player removed successfully');
-                // Optionally, refresh the players list after removal
                 fetchPlayers(selectedGame.gameCode);
             } else {
-                console.error('Failed to remove player');
+                const data = await response.json().catch(() => ({}));
+                showNotification(data.error || 'Failed to remove player');
             }
         } catch (error) {
-            console.error('Error removing player:', error);
+            showNotification('Error removing player. Please try again.');
         }
     }
 
@@ -389,10 +405,8 @@ function Dashboard() {
                 // Optionally refetch game details or show a success message
                 fetchGameDetails(selectedGame.gameCode);
             } else {
-                console.error('Failed to update submission due date');
             }
         } catch (error) {
-            console.error('Error updating submission due date:', error);
         }
     };
 
@@ -410,22 +424,18 @@ function Dashboard() {
             if (response.ok) {
                 fetchGameDetails(selectedGame.gameCode);
             } else {
-                console.error('Failed to update rank due date');
             }
         } catch (error) {
-            console.error('Error updating rank due date:', error);
         }
     };
 
     const handleSaveRanking = async (ranking) => {
         if (!selectedGame || !user) {
-            alert('No game or user selected.');
+            showNotification('No game or user selected.');
             return;
         }
         try {
             const token = localStorage.getItem('authToken');
-            // Only send non-null song IDs in order
-            // const filteredRanking = ranking.filter(id => id !== null);
             const response = await fetch(`/api/game/${selectedGame.gameCode}/rankings`, {
                 method: 'POST',
                 headers: {
@@ -435,17 +445,13 @@ function Dashboard() {
                 body: JSON.stringify({ ranking: ranking }),
             });
             if (response.ok) {
-                const data = await response.json();
-                console.log('Ranking saved:', data);
-                // alert('Ranking saved!');
+                showNotification('Ranking saved!', 'success');
             } else {
-                const errorText = await response.text();
-                console.error('Failed to save ranking:', errorText);
-                // alert('Failed to save ranking.');
+                const data = await response.json().catch(() => ({}));
+                showNotification(data.error || 'Failed to save ranking');
             }
         } catch (error) {
-            console.error('Error saving ranking:', error);
-            // alert('Error saving ranking.');
+            showNotification('Error saving ranking. Please try again.');
         }
     };
 
@@ -467,6 +473,18 @@ function Dashboard() {
 
     return (
         <div className="dashboard">
+            {notification && (
+                <div className={`notification-banner ${notification.type}`}>
+                    {notification.message}
+                </div>
+            )}
+            {confirmDialog && (
+                <ConfirmDialog
+                    message={confirmDialog.message}
+                    onConfirm={confirmDialog.onConfirm}
+                    onCancel={() => setConfirmDialog(null)}
+                />
+            )}
             <Header onUserIconClick={() => handleUserIconClick()} />
             {isUserMenuVisible && (
                     <div className="user-menu">
