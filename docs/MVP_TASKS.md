@@ -87,12 +87,12 @@ This is a prioritized task list to get RankWebProject stable, secure, and tested
 
 ## P6 — Deployment Hardening
 
-- [ ] **Document all required env vars** — Create `.env.example` with placeholder values for both dev and production.
-- [ ] **Add health check endpoint** — `GET /api/health` returns 200 with DB connectivity status.
-- [ ] **Configure CORS properly** — Add `flask-cors` with explicit allowed origins for production domain.
-- [ ] **Add request logging** — Use Python `logging` module instead of `print()` statements throughout backend.
-- [ ] **Set up error monitoring** — Add Sentry or similar for uncaught exceptions in production.
-- [ ] **Automate deployment** — Add a GitHub Actions deploy job (SSH + pull + build + restart) triggered on main branch push.
+- [x] **Document all required env vars** — Created `app/.env.example` with all required and optional variables with placeholder values.
+- [x] **Add health check endpoint** — `GET /api/health` returns 200 with `{"status": "healthy", "database": "connected"}` or 503 if DB is down.
+- [x] **Configure CORS properly** — Added `flask-cors` with explicit allowed origins: `rankwebgame.com` (production) and `localhost:3000` (dev).
+- [x] **Add request logging** — Configured Python `logging` module in `__init__.py`. Replaced all `print()` statements in `tasks.py` with `logger.info()`.
+- [ ] **Set up error monitoring** *(deferred — logging to gunicorn error log is sufficient for current scale. Add Sentry if user base grows.)*
+- [x] **Automate deployment** — GitHub Actions `deploy.yml` with `workflow_dispatch` trigger. SSHs into droplet, pulls, installs deps, runs migrations, restarts gunicorn, rebuilds frontend.
 
 ---
 
@@ -109,6 +109,7 @@ These are noted in the README roadmap but not required for production readiness:
 - Winner display
 - Update login/register page styling to match the dashboard aesthetic
 - Restyle confirmation dialog to match the paper/hand-drawn theme
+- Cloud log aggregation (Papertrail or similar) for viewing logs without SSH
 
 ---
 
