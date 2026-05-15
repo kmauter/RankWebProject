@@ -1,6 +1,6 @@
 from app import app, db
 from app.models import User, Game, GameUser, Song, Rank, Stage, SongStat
-from flask import request, redirect, g
+from flask import request, g
 from flask import jsonify
 from datetime import datetime, timedelta, timezone
 from functools import wraps

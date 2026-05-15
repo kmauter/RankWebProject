@@ -33,19 +33,7 @@ function Dashboard() {
     const showNotification = (message, type = 'error') => {
         setNotification({ message, type });
         setTimeout(() => setNotification(null), 4000);
-    }; // Assuming you have a UserContext to get user info
-
-    const API_BASE_URL =
-        process.env.NODE_ENV === "production"
-            ? "https://rankwebgame.com/api"
-            : "http://127.0.0.1:5000/api";
-
-    // const gamePreviews = [
-    //     { title: 'Songs About Capitalism', status: 'submissions' , dueDate: 'May 5' },
-    //     { title: 'Songs Under 2 Mins', status: 'rankings', dueDate: 'May 7' },
-    //     { title: 'Songs For Mothers Day', status: 'rankings', dueDate: 'May 8' },
-    //     { title: 'Babytron Songs', status: 'results' }
-    // ];
+    };
 
     const handleUserIconClick = () => {
         console.log('User:', user); // Log user info for debugging
