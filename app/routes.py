@@ -146,7 +146,7 @@ def get_user_profile():
         return jsonify({'message': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/games', methods=['POST'])
@@ -203,7 +203,7 @@ def create_game():
         return jsonify({'error': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/join-game', methods=['POST'])
@@ -237,7 +237,7 @@ def join_game():
         return jsonify({'error': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/user-games', methods=['GET'])
@@ -282,7 +282,7 @@ def get_user_games():
         return jsonify({'error': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/submit-song', methods=["POST"])
@@ -355,7 +355,7 @@ def submit_song_to_game():
         return jsonify({'error': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/my-game-songs', methods=["GET"])
@@ -395,7 +395,7 @@ def get_my_songs_for_game():
         return jsonify({'error': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/game/<game_code>/update-game', methods=["PATCH"])
@@ -428,7 +428,7 @@ def update_game(game_code):
         return jsonify({'error': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/game/<game_code>', methods=["GET"])
@@ -468,7 +468,7 @@ def get_game_details(game_code):
         return jsonify({'error': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/game/<game_code>/songs', methods=["GET"])
@@ -522,7 +522,7 @@ def get_game_songs_details(game_code):
         return jsonify({'error': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/song/<int:song_id>', methods=["DELETE"])
@@ -545,7 +545,7 @@ def delete_song(song_id):
         return jsonify({'error': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/game/<game_code>/players', methods=['GET'])
@@ -576,7 +576,7 @@ def get_game_players(game_code):
         return jsonify({'error': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/game/<game_code>/player/<int:remove_user_id>', methods=['DELETE'])
@@ -602,7 +602,7 @@ def remove_player_from_game(game_code, remove_user_id):
         return jsonify({'error': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/connect-spotify', methods=['GET'])
@@ -725,7 +725,7 @@ def get_user_rankings(game_code):
         return jsonify({'error': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/game/<game_code>/rankings', methods=['POST'])
@@ -755,7 +755,7 @@ def save_user_rankings(game_code):
         return jsonify({'error': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/game/<game_code>/rankings', methods=['PATCH'])
@@ -793,7 +793,7 @@ def patch_user_rankings(game_code):
         return jsonify({'error': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/game/<game_code>/rankings', methods=['DELETE'])
@@ -811,5 +811,5 @@ def delete_user_rankings(game_code):
         return jsonify({'error': 'Token has expired'}), 401
     except (jwt.InvalidTokenError, AttributeError):
         return jsonify({'error': 'Invalid or missing token'}), 401
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Internal server error'}), 500
