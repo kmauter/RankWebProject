@@ -17,9 +17,11 @@ function RegisterForm() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [password2, setPassword2] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
     const handleRegister = (e) => {
         e.preventDefault();
+        setErrorMessage('');
 
         axios.post('/api/register', {
             username,
@@ -28,13 +30,14 @@ function RegisterForm() {
             password2
         })
         .then(response => {
-            console.log(response.data);
             navigate(routes.login);
-            // handle successful registration here
         })
         .catch(error => {
-            console.log(error);
-            // handle errors here
+            if (error.response && error.response.data && error.response.data.error) {
+                setErrorMessage(error.response.data.error);
+            } else {
+                setErrorMessage('Registration failed. Please try again.');
+            }
         });
     }
 
@@ -43,6 +46,7 @@ function RegisterForm() {
             <img src={require('../assets/RankWebLogo.png')} alt="RankWeb Logo" className="home-logo" />
             <div className="centered-container">
                 <Form onSubmit={handleRegister} className="form-container">
+                    {errorMessage && <p className="error-message">{errorMessage}</p>}
                     <div className='form-grid'>
                         <div className='form-column'>
                             <FormField 

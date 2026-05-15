@@ -35,7 +35,6 @@ function GameDetails({
         const slotCount = songs.length;
         const rankingArr = Array(slotCount).fill(null);
 
-        console.log("Loaded User Ranking: ", userRanking);
 
         userRanking.forEach((id, idx) => {
             if (idx < slotCount) rankingArr[idx] = id;
@@ -371,7 +370,6 @@ function GameDetails({
                             <button
                                 className="save-ranking-btn"
                                 onClick={() => {
-                                    console.log("Current Ranking: ", ranking);
                                     onSaveRanking(ranking);
                                 }}
                             >

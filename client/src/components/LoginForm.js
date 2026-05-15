@@ -38,7 +38,6 @@ function LoginForm() {
             navigate('/dashboard'); // Handle successful login here (e.g., redirect to dashboard)
         })
         .catch(error => {
-            console.log(error);
             setErrorMessage('Invalid username or password'); // Set the error message
         });
     };

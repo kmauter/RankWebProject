@@ -43,15 +43,22 @@ This is a prioritized task list to get RankWebProject stable, secure, and tested
 
 ---
 
+## Discovered Issues (found during P4 work)
+
+- [x] **`except Exception` returns 401 for non-auth errors** — Fixed all 16 route handlers: JWT/auth errors (ExpiredSignature, InvalidToken, missing header) return 401, all other exceptions return 500. Prevents non-auth errors from triggering the global logout redirect.
+- [x] **`max_submissions_per_user` stored as string in some DB rows** — Frontend was sending empty string or string numbers. Fixed: `int(data.get('maxSubmissionsPerUser') or 2)` in create-game ensures integer storage. Added `int()` cast on comparison for old data safety.
+
+---
+
 ## P4 — Frontend UX (Minimum viable experience)
 
-- [ ] **Add loading states** — Show a spinner or skeleton while fetching games, songs, and rankings.
-- [ ] **Show error messages to users** — Display toast/banner when API calls fail (song submission, join game, create game, save ranking).
-- [ ] **Add confirmation dialogs** — Confirm before: deleting a song, removing a player, logging out.
-- [ ] **Show registration errors from backend** — Display "User already exists" or "Passwords do not match" messages in the RegisterForm.
-- [ ] **Remove console.log statements** — Strip all debug logging from production code.
-- [ ] **Remove dead code** — Delete `GamePopup.js`, remove commented-out blocks in Dashboard.js.
-- [ ] **Remove unused `react-beautiful-dnd` dependency** — Only `@dnd-kit` is used.
+- [ ] **Add loading states** *(deferred — requests are fast enough, revisit if performance degrades)*
+- [x] **Show error messages to users** — Added notification banner system to Dashboard. Red banner for errors (song submission, join game, create game, save ranking failures), green banner for success (ranking saved). Auto-dismisses after 4 seconds. Uses HandFont and existing color variables.
+- [x] **Add confirmation dialogs** — Created `ConfirmDialog` component with overlay. Wired to delete song, remove player, and logout actions. Uses HandFont, existing color variables, centered modal with Cancel/Confirm buttons.
+- [x] **Show registration errors from backend** — RegisterForm now displays backend error messages ("User already exists", "Passwords do not match", etc.) using the existing `.error-message` style.
+- [x] **Remove console.log statements** — Removed 45 console.log/error/warn statements from all source files.
+- [x] **Remove dead code** — Deleted unused `GamePopup.js`.
+- [x] **Remove unused `react-beautiful-dnd` dependency** — Uninstalled from package.json.
 
 ---
 
@@ -100,6 +107,8 @@ These are noted in the README roadmap but not required for production readiness:
 - Spotify audio features (loudness, happiness)
 - Spreadsheet export
 - Winner display
+- Update login/register page styling to match the dashboard aesthetic
+- Restyle confirmation dialog to match the paper/hand-drawn theme
 
 ---
 
