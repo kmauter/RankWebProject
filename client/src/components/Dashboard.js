@@ -33,19 +33,7 @@ function Dashboard() {
     const showNotification = (message, type = 'error') => {
         setNotification({ message, type });
         setTimeout(() => setNotification(null), 4000);
-    }; // Assuming you have a UserContext to get user info
-
-    const API_BASE_URL =
-        process.env.NODE_ENV === "production"
-            ? "https://rankwebgame.com/api"
-            : "http://127.0.0.1:5000/api";
-
-    // const gamePreviews = [
-    //     { title: 'Songs About Capitalism', status: 'submissions' , dueDate: 'May 5' },
-    //     { title: 'Songs Under 2 Mins', status: 'rankings', dueDate: 'May 7' },
-    //     { title: 'Songs For Mothers Day', status: 'rankings', dueDate: 'May 8' },
-    //     { title: 'Babytron Songs', status: 'results' }
-    // ];
+    };
 
     const handleUserIconClick = () => {
         console.log('User:', user); // Log user info for debugging
@@ -455,20 +443,46 @@ function Dashboard() {
         }
     };
 
-    const handleSpotifyConnect = () => {
+    const handleSpotifyConnect = async () => {
         if (!user || !user.user_id) {
-            alert("You must be logged in to connect Spotify.");
+            showNotification("You must be logged in to connect Spotify.");
             return;
         }
-        window.open(`${API_BASE_URL}/connect-spotify?user_id=${user.user_id}`, "_blank", "noopener,noreferrer");
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('/api/connect-spotify', {
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                window.open(data.auth_url, "_blank", "noopener,noreferrer");
+            } else {
+                showNotification("Failed to connect Spotify.");
+            }
+        } catch {
+            showNotification("Error connecting to Spotify.");
+        }
     };
 
-    const handleYouTubeConnect = () => {
+    const handleYouTubeConnect = async () => {
         if (!user || !user.user_id) {
-            alert("You must be logged in to connect YouTube.");
+            showNotification("You must be logged in to connect YouTube.");
             return;
         }
-        window.open(`${API_BASE_URL}/connect-youtube?user_id=${user.user_id}`, "_blank", "noopener,noreferrer");
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await fetch('/api/connect-youtube', {
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                window.open(data.auth_url, "_blank", "noopener,noreferrer");
+            } else {
+                showNotification("Failed to connect YouTube.");
+            }
+        } catch {
+            showNotification("Error connecting to YouTube.");
+        }
     };
 
     return (

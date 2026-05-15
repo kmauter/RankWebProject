@@ -14,7 +14,10 @@ jobs:
           username: root
           key: ${{ secrets.DROPLET_SSH_KEY }}
           script: |
+            set -e
             cd /root/RankWebProject
+            git checkout -- .
+            git clean -fd app/__pycache__/ || true
             git pull origin main
             venv/bin/pip install -r requirements.txt
             export SECRET_KEY=$(grep SECRET_KEY app/.env | cut -d'"' -f2)

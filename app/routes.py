@@ -1,6 +1,6 @@
 from app import app, db
 from app.models import User, Game, GameUser, Song, Rank, Stage, SongStat
-from flask import request, redirect, g
+from flask import request, g
 from flask import jsonify
 from datetime import datetime, timedelta, timezone
 from functools import wraps
@@ -631,7 +631,7 @@ def connect_spotify():
         "state": state,
     }
     auth_url = "https://accounts.spotify.com/authorize?" + urlencode(params)
-    return redirect(auth_url)
+    return jsonify({"auth_url": auth_url}), 200
 
 @app.route('/api/spotifycallback')
 def spotify_callback():
@@ -649,7 +649,6 @@ def spotify_callback():
         "client_id": SPOTIFY_CLIENT_ID,
         "client_secret": SPOTIFY_CLIENT_SECRET,
     }
-    print("Spotify token payload:", payload)
     response = requests.post(token_url, data=payload)
     if response.status_code != 200:
         return "Failed to get token", 400
@@ -683,7 +682,7 @@ def connect_youtube():
         "state": state,
     }
     auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode(params)
-    return redirect(auth_url)
+    return jsonify({"auth_url": auth_url}), 200
 
 @app.route('/api/youtubecallback')
 def youtube_callback():
@@ -706,6 +705,8 @@ def youtube_callback():
     tokens = response.json()
     refresh_token = tokens.get("refresh_token")
     user = User.query.get(user_id)
+    if not user:
+        return "User not found for this OAuth callback", 400
     user.youtube_refresh_token = refresh_token
     db.session.commit()
     return "YouTube account connected! You can close this window."
