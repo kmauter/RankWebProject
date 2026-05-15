@@ -19,14 +19,13 @@ class TestConnectSpotify:
     """Tests for GET /api/connect-spotify"""
 
     def test_connect_spotify_redirects_to_auth_url(self, client, sample_user):
-        """Connect Spotify with valid JWT redirects to Spotify auth URL."""
+        """Connect Spotify with valid JWT returns auth URL."""
         headers = make_auth_header(sample_user.id)
         resp = client.get("/api/connect-spotify", headers=headers)
-        assert resp.status_code == 302
-        location = resp.headers.get("Location", "")
-        assert "accounts.spotify.com/authorize" in location
-        assert "client_id" in location
-        assert "redirect_uri" in location
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert "auth_url" in data
+        assert "accounts.spotify.com/authorize" in data["auth_url"]
 
     def test_connect_spotify_no_auth_returns_401(self, client):
         """Connect Spotify without auth returns 401."""
@@ -80,14 +79,13 @@ class TestConnectYouTube:
     """Tests for GET /api/connect-youtube"""
 
     def test_connect_youtube_redirects_to_auth_url(self, client, sample_user):
-        """Connect YouTube with valid JWT redirects to Google auth URL."""
+        """Connect YouTube with valid JWT returns auth URL."""
         headers = make_auth_header(sample_user.id)
         resp = client.get("/api/connect-youtube", headers=headers)
-        assert resp.status_code == 302
-        location = resp.headers.get("Location", "")
-        assert "accounts.google.com" in location
-        assert "client_id" in location
-        assert "redirect_uri" in location
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert "auth_url" in data
+        assert "accounts.google.com" in data["auth_url"]
 
     def test_connect_youtube_no_auth_returns_401(self, client):
         """Connect YouTube without auth returns 401."""

@@ -47,6 +47,12 @@ This is a prioritized task list to get RankWebProject stable, secure, and tested
 
 - [x] **`except Exception` returns 401 for non-auth errors** — Fixed all 16 route handlers: JWT/auth errors (ExpiredSignature, InvalidToken, missing header) return 401, all other exceptions return 500. Prevents non-auth errors from triggering the global logout redirect.
 - [x] **`max_submissions_per_user` stored as string in some DB rows** — Frontend was sending empty string or string numbers. Fixed: `int(data.get('maxSubmissionsPerUser') or 2)` in create-game ensures integer storage. Added `int()` cast on comparison for old data safety.
+- [x] **OAuth connect endpoints used `window.open` with query param** — Frontend couldn't send JWT via `window.open()`. Changed backend to return auth URL as JSON (200) instead of 302 redirect. Frontend now fetches with JWT header, then opens the returned URL.
+- [x] **Spotify callback logged client secret** — Removed `print()` that exposed `SPOTIFY_CLIENT_SECRET` in logs.
+- [x] **YouTube callback didn't check if user exists** — Added null check before setting `youtube_refresh_token`, preventing `AttributeError` crash.
+
+### Remaining config note
+- Production `.env` must have correct redirect URIs for Spotify/YouTube callbacks (e.g., `https://rankwebgame.com/api/spotifycallback`). These must also be registered in the Spotify Dashboard and Google Cloud Console.
 
 ---
 
