@@ -178,6 +178,16 @@ def create_game():
         except ValueError:
             return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD.'}), 400
 
+        # Check for duplicate game (same owner, theme, and dates)
+        existing = Game.query.filter_by(
+            owner_id=user_id,
+            theme=theme,
+            submission_duedate=submission_duedate,
+            rank_duedate=rank_duedate
+        ).first()
+        if existing:
+            return jsonify({'error': 'A game with this theme and dates already exists'}), 400
+
         # Generate a unique game code
         game_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
