@@ -1,3 +1,4 @@
+import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 from app import app, db
 from app.models import Game, Stage, Rank, Song, SongStat
@@ -7,6 +8,9 @@ from app.spotifyactions import create_spotify_playlist_for_game
 from app.youtubeactions import create_youtube_playlist_for_game
 from statistics import mean, median
 from collections import defaultdict
+
+logger = logging.getLogger(__name__)
+
 
 def update_game_stages():
     with app.app_context():
@@ -42,7 +46,6 @@ def update_game_stages():
                     song_ranks.setdefault(song_id, []).append(i)
 
             # calculate statistics for the game
-            # # avg rank, median rank, range, controversy score, and user who submitted
             for song_id, positions in song_ranks.items():
                 if not positions:
                     continue
@@ -65,7 +68,7 @@ def update_game_stages():
             game.stage = Stage.DONE
 
             db.session.commit()
-            print(f"Game {game.id} rolled over to finished stage.")
+            logger.info(f"Game {game.id} rolled over to finished stage.")
 
         # ROLL GAMES OVER FROM SUBMIT TO RANK STAGE
         games = Game.query.filter(
@@ -84,7 +87,7 @@ def update_game_stages():
             game.song_order = [song.id for song in songs]
 
             if not songs:
-                print(f"No songs found for game {game.id}. Skipping playlist creation.")
+                logger.info(f"No songs found for game {game.id}. Skipping playlist creation.")
 
             else:
                 owner = game.owner
@@ -92,7 +95,7 @@ def update_game_stages():
                 youtube_refresh_token = owner.youtube_refresh_token if owner else None
 
                 if not spotify_refresh_token:
-                    print(f"Owner of game {game.id} has not connected their Spotify. Skipping Spotify playlist creation.")
+                    logger.info(f"Owner of game {game.id} has not connected Spotify. Skipping.")
                 else:
                     spotify_url = create_spotify_playlist_for_game(
                         game,
@@ -103,7 +106,7 @@ def update_game_stages():
                     game.spotify_playlist_url = spotify_url
 
                 if not youtube_refresh_token:
-                    print(f"Owner of game {game.id} has not connected their YouTube. Skipping YouTube playlist creation.")
+                    logger.info(f"Owner of game {game.id} has not connected YouTube. Skipping.")
                 else:
                     youtube_url = create_youtube_playlist_for_game(
                         game,
@@ -114,17 +117,11 @@ def update_game_stages():
                     game.youtube_playlist_url = youtube_url
 
             db.session.commit()
-            print(f"Game {game.id} rolled over to ranking stage.")
+            logger.info(f"Game {game.id} rolled over to ranking stage.")
+
 
 def start_scheduler():
     scheduler = BackgroundScheduler()
     scheduler.add_job(func=update_game_stages, trigger="interval", hours=1)
     scheduler.start()
-
-# Automation Between
-# - When submission due date is passed, trigger Automation
-# - Randomize order of songs
-# - Create Spotify playlist (if given spotify account to make playlist in)
-# - Create Youtube playlist (if given youtube account to make playlist in OR default account)
-# - Switch stage to ranking
-# - Fetch additional song data from spotify (loudness, happiness, etc.)
+    logger.info("Scheduler started — running update_game_stages every hour.")

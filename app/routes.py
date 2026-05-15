@@ -55,6 +55,14 @@ def get_user_id_from_token():
 def index():
     return jsonify({"message": "API root"})
 
+@app.route('/api/health')
+def health_check():
+    try:
+        db.session.execute(db.text('SELECT 1'))
+        return jsonify({"status": "healthy", "database": "connected"}), 200
+    except Exception:
+        return jsonify({"status": "unhealthy", "database": "disconnected"}), 503
+
 @app.route('/api/register', methods=['POST'])
 @limiter.limit("5 per minute")
 def add_user():
