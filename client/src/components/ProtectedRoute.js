@@ -1,6 +1,5 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { UserContext } from '../contexts/UserContext';
 import { jwtDecode } from 'jwt-decode';
 
 /**
@@ -9,7 +8,6 @@ import { jwtDecode } from 'jwt-decode';
  * with UserContext's async useEffect on page refresh.
  */
 function ProtectedRoute({ children }) {
-    const { user } = useContext(UserContext);
     const token = localStorage.getItem('authToken');
 
     // If there's no token at all, redirect immediately
