@@ -166,6 +166,13 @@ code {
   margin-bottom: 1rem;
 }
 
+.success-message {
+  color: var(--primary-green);
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
 .dashboard {
   position: relative;
   min-height: 100vh; /* Full viewport height */
@@ -897,6 +904,24 @@ textarea.input-form {
   border-spacing: 0;
   margin: 1.5em 0;
   table-layout: auto;
+}
+
+.results-table tbody {
+  display: block;
+  max-height: 50vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.results-table tbody::-webkit-scrollbar {
+  display: none;
+}
+
+.results-table thead,
+.results-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
 }
 
 .results-table th,
