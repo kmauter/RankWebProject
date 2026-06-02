@@ -23,7 +23,11 @@ function ForgotPassword() {
 
         try {
             const response = await axios.post('/api/forgot-password', { identifier });
-            setMessage(response.data.message);
+            if (response.data.new_password) {
+                setMessage(`Your new password is: ${response.data.new_password}\n\nPlease log in and change it.`);
+            } else {
+                setMessage(response.data.message);
+            }
         } catch (err) {
             const data = err.response?.data;
             setError(data?.error || 'Something went wrong. Please try again.');
@@ -52,7 +56,7 @@ function ForgotPassword() {
                                 Back to Login
                             </Link>
                             <Button type="submit" className="custom-btn" disabled={loading}>
-                                {loading ? 'Sending...' : 'Send New Password'}
+                                {loading ? 'Resetting...' : 'Reset Password'}
                             </Button>
                         </div>
                     </>

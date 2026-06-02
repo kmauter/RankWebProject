@@ -2,7 +2,6 @@
 Tests for password management endpoints: forgot-password and change-password.
 """
 import pytest
-from unittest.mock import patch, MagicMock
 from tests.conftest import make_auth_header
 from app.models import User
 from app import db
@@ -11,83 +10,33 @@ from app import db
 class TestForgotPassword:
     """Tests for POST /api/forgot-password"""
 
-    @patch("app.routes.smtplib.SMTP")
-    def test_forgot_password_by_email_sends_and_saves(self, mock_smtp, client, sample_user):
-        """Valid email triggers email send and updates password."""
-        mock_server = MagicMock()
-        mock_smtp.return_value.__enter__ = lambda s: mock_server
-        mock_smtp.return_value.__exit__ = MagicMock(return_value=False)
-
+    def test_forgot_password_by_email(self, client, sample_user):
+        """Valid email resets password and returns new one."""
         original_hash = sample_user.password_hash
-
-        with patch.dict("os.environ", {
-            "SMTP_USER": "test@example.com",
-            "SMTP_PASS": "testpass",
-            "SMTP_FROM": "test@example.com"
-        }):
-            resp = client.post("/api/forgot-password", json={"identifier": "test@example.com"})
-
+        resp = client.post("/api/forgot-password", json={"identifier": "test@example.com"})
         assert resp.status_code == 200
+        data = resp.get_json()
+        assert "new_password" in data
+        assert len(data["new_password"]) == 12
         # Password should have changed
         db.session.refresh(sample_user)
         assert sample_user.password_hash != original_hash
-        # Email should have been sent
-        mock_server.send_message.assert_called_once()
 
-    @patch("app.routes.smtplib.SMTP")
-    def test_forgot_password_by_username(self, mock_smtp, client, sample_user):
+    def test_forgot_password_by_username(self, client, sample_user):
         """Valid username also works."""
-        mock_server = MagicMock()
-        mock_smtp.return_value.__enter__ = lambda s: mock_server
-        mock_smtp.return_value.__exit__ = MagicMock(return_value=False)
-
-        with patch.dict("os.environ", {
-            "SMTP_USER": "test@example.com",
-            "SMTP_PASS": "testpass",
-            "SMTP_FROM": "test@example.com"
-        }):
-            resp = client.post("/api/forgot-password", json={"identifier": "testuser"})
-
+        resp = client.post("/api/forgot-password", json={"identifier": "testuser"})
         assert resp.status_code == 200
+        assert "new_password" in resp.get_json()
 
-    def test_forgot_password_nonexistent_user_returns_200(self, client):
-        """Non-existent user returns 200 (doesn't reveal account existence)."""
+    def test_forgot_password_nonexistent_user_returns_404(self, client):
+        """Non-existent user returns 404."""
         resp = client.post("/api/forgot-password", json={"identifier": "nobody@example.com"})
-        assert resp.status_code == 200
+        assert resp.status_code == 404
 
     def test_forgot_password_missing_identifier_returns_400(self, client):
         """Missing identifier returns 400."""
         resp = client.post("/api/forgot-password", json={"identifier": ""})
         assert resp.status_code == 400
-
-    def test_forgot_password_smtp_not_configured_returns_503(self, client, sample_user):
-        """Returns 503 and does NOT change password if SMTP is not configured."""
-        original_hash = sample_user.password_hash
-
-        with patch.dict("os.environ", {"SMTP_USER": "", "SMTP_PASS": ""}):
-            resp = client.post("/api/forgot-password", json={"identifier": "test@example.com"})
-
-        assert resp.status_code == 503
-        # Password should NOT have changed
-        db.session.refresh(sample_user)
-        assert sample_user.password_hash == original_hash
-
-    @patch("app.routes.smtplib.SMTP")
-    def test_forgot_password_smtp_failure_returns_503_and_does_not_save(self, mock_smtp, client, sample_user):
-        """If email send fails, password is NOT changed."""
-        mock_smtp.side_effect = Exception("SMTP connection failed")
-        original_hash = sample_user.password_hash
-
-        with patch.dict("os.environ", {
-            "SMTP_USER": "test@example.com",
-            "SMTP_PASS": "testpass"
-        }):
-            resp = client.post("/api/forgot-password", json={"identifier": "test@example.com"})
-
-        assert resp.status_code == 503
-        # Password must NOT have been saved
-        db.session.refresh(sample_user)
-        assert sample_user.password_hash == original_hash
 
 
 class TestChangePassword:
