@@ -9,8 +9,6 @@ import jwt
 import random
 import string
 import requests
-import smtplib
-from email.message import EmailMessage
 from app.config import Config
 from app import limiter
 from dotenv import load_dotenv
@@ -147,7 +145,7 @@ def login():
 @app.route('/api/forgot-password', methods=['POST'])
 @limiter.limit("3 per minute")
 def forgot_password():
-    """Generate a new random password, email it, then save if email succeeds."""
+    """Generate a new random password and return it to the user."""
     data = request.get_json()
     identifier = (data.get('identifier') or '').strip()
 
@@ -159,49 +157,17 @@ def forgot_password():
     if not user:
         user = User.query.filter_by(username=identifier).first()
     if not user:
-        # Don't reveal whether the account exists — return success regardless
-        return jsonify({'message': 'If an account with that info exists, a new password has been sent to the registered email.'}), 200
+        return jsonify({'error': 'No account found with that username or email.'}), 404
 
     # Generate a secure random password
     new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-
-    # Attempt to send the email BEFORE saving the new password
-    smtp_host = os.getenv('SMTP_HOST', 'smtp.gmail.com')
-    smtp_port = int(os.getenv('SMTP_PORT', 587))
-    smtp_user = os.getenv('SMTP_USER', '')
-    smtp_pass = os.getenv('SMTP_PASS', '')
-    from_addr = os.getenv('SMTP_FROM', smtp_user)
-
-    if not smtp_user or not smtp_pass:
-        app.logger.error("SMTP not configured — cannot send password reset email")
-        return jsonify({'error': 'Email service is not configured. Please contact support.'}), 503
-
-    try:
-        msg = EmailMessage()
-        msg.set_content(
-            f"Hi {user.username},\n\n"
-            f"A password reset was requested for your RankWeb account.\n\n"
-            f"Your new password is: {new_password}\n\n"
-            f"Please log in and change your password if desired.\n\n"
-            f"- RankWeb Team"
-        )
-        msg['Subject'] = 'RankWeb - Password Reset'
-        msg['From'] = from_addr
-        msg['To'] = user.email
-
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_pass)
-            server.send_message(msg)
-    except Exception as e:
-        app.logger.error(f"Failed to send password reset email: {e}")
-        return jsonify({'error': 'Failed to send reset email. Password was not changed.'}), 503
-
-    # Email sent successfully — now save the new password
     user.set_password(new_password)
     db.session.commit()
 
-    return jsonify({'message': 'If an account with that info exists, a new password has been sent to the registered email.'}), 200
+    return jsonify({
+        'message': 'Password has been reset.',
+        'new_password': new_password
+    }), 200
 
 
 @app.route('/api/change-password', methods=['POST'])
