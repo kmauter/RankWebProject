@@ -15,6 +15,10 @@ os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 from app import app as flask_app, db
 from app.models import User, Game, GameUser, Song, Rank, Stage
 
+# Disable rate limiter for tests
+from app import limiter
+limiter.enabled = False
+
 
 @pytest.fixture(autouse=True)
 def app():
@@ -23,6 +27,7 @@ def app():
         "TESTING": True,
         "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
         "SECRET_KEY": "test-secret-key",
+        "RATELIMIT_ENABLED": False,
     })
 
     with flask_app.app_context():

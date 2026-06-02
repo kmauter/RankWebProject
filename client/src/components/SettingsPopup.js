@@ -45,8 +45,8 @@ const SettingsPopup = ({ onClose, onSpotifyConnect, onYouTubeConnect }) => {
             <hr style={{ width: '80%', margin: '1.5rem auto' }} />
 
             <h3 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>Change Password</h3>
-            {error && <p className="error-message">{error}</p>}
-            {message && <p className="success-message">{message}</p>}
+            {error && <p className="error-message" style={{color: 'rgb(64, 57, 43)'}}>{error}</p>}
+            {message && <p className="success-message" style={{color: 'rgb(64, 57, 43)'}}>{message}</p>}
             <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem', width: '80%' }}>
                 <input
                     type="password"
