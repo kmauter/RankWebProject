@@ -9,8 +9,6 @@ import jwt
 import random
 import string
 import requests
-import smtplib
-from email.message import EmailMessage
 from app.config import Config
 from app import limiter
 from dotenv import load_dotenv
