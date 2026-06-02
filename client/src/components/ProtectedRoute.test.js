@@ -38,7 +38,10 @@ describe('ProtectedRoute', () => {
     });
 
     test('renders children when user and token exist', () => {
-        localStorage.setItem('authToken', 'valid-token');
+        // Create a fake JWT with exp far in the future
+        const payload = btoa(JSON.stringify({ user_id: 1, exp: 9999999999 }));
+        const fakeToken = `eyJhbGciOiJIUzI1NiJ9.${payload}.fake-signature`;
+        localStorage.setItem('authToken', fakeToken);
         renderWithAuth({ user_id: 1 });
         expect(screen.getByText('Dashboard Content')).toBeInTheDocument();
     });

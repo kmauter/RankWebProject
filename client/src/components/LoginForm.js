@@ -63,10 +63,15 @@ function LoginForm() {
                             value={password} 
                             onChange={(e) => setPassword(e.target.value)}
                         />
-                        <div className='form-footer'>
-                            <Link to={routes.register} className="link">
-                                Register
-                            </Link>
+                                                <div className='form-footer'>
+                            <div>
+                                <Link to={routes.register} className="link" style={{ display: 'block', marginBottom: '0.5rem' }}>
+                                    Register
+                                </Link>
+                                <Link to={routes.forgotPassword} className="link" style={{ fontSize: '0.85rem' }}>
+                                    Forgot Password?
+                                </Link>
+                            </div>
                             <Button type="submit" className="custom-btn">
                                 Login
                             </Button>

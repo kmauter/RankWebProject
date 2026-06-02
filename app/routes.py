@@ -9,6 +9,8 @@ import jwt
 import random
 import string
 import requests
+import smtplib
+from email.message import EmailMessage
 from app.config import Config
 from app import limiter
 from dotenv import load_dotenv
@@ -141,6 +143,94 @@ def login():
         return jsonify({'message': 'Login successful!', 'token': token, 'user_id': user.id})
     else:
         return jsonify({'message': 'Invalid username or password'}), 401
+
+@app.route('/api/forgot-password', methods=['POST'])
+@limiter.limit("3 per minute")
+def forgot_password():
+    """Generate a new random password, hash and store it, then email it to the user."""
+    data = request.get_json()
+    identifier = (data.get('identifier') or '').strip()
+
+    if not identifier:
+        return jsonify({'error': 'Please provide your username or email address.'}), 400
+
+    # Look up by email first, then by username
+    user = User.query.filter_by(email=identifier).first()
+    if not user:
+        user = User.query.filter_by(username=identifier).first()
+    if not user:
+        # Don't reveal whether the account exists — return success regardless
+        return jsonify({'message': 'If an account with that info exists, a new password has been sent to the registered email.'}), 200
+
+    # Generate a secure random password
+    new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+    user.set_password(new_password)
+    db.session.commit()
+
+    # Send the email
+    smtp_host = os.getenv('SMTP_HOST', 'smtp.gmail.com')
+    smtp_port = int(os.getenv('SMTP_PORT', 587))
+    smtp_user = os.getenv('SMTP_USER', '')
+    smtp_pass = os.getenv('SMTP_PASS', '')
+    from_addr = os.getenv('SMTP_FROM', smtp_user)
+
+    if smtp_user and smtp_pass:
+        try:
+            msg = EmailMessage()
+            msg.set_content(
+                f"Hi {user.username},\n\n"
+                f"A password reset was requested for your RankWeb account.\n\n"
+                f"Your new password is: {new_password}\n\n"
+                f"Please log in and change your password if desired.\n\n"
+                f"- RankWeb Team"
+            )
+            msg['Subject'] = 'RankWeb - Password Reset'
+            msg['From'] = from_addr
+            msg['To'] = user.email
+
+            with smtplib.SMTP(smtp_host, smtp_port) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_pass)
+                server.send_message(msg)
+        except Exception as e:
+            app.logger.error(f"Failed to send password reset email: {e}")
+
+    return jsonify({'message': 'If an account with that info exists, a new password has been sent to the registered email.'}), 200
+
+
+@app.route('/api/change-password', methods=['POST'])
+@require_auth
+def change_password():
+    """Change the authenticated user's password."""
+    data = request.get_json()
+    old_password = data.get('old_password', '')
+    new_password = data.get('new_password', '')
+    new_password2 = data.get('new_password2', '')
+
+    # Validate inputs
+    if not old_password or not new_password or not new_password2:
+        return jsonify({'error': 'All fields are required.'}), 400
+
+    if new_password != new_password2:
+        return jsonify({'error': 'New passwords do not match.'}), 400
+
+    if len(new_password) < 6:
+        return jsonify({'error': 'New password must be at least 6 characters.'}), 400
+
+    # Authenticate user
+    user = User.query.get(g.user_id)
+    if not user:
+        return jsonify({'error': 'User not found.'}), 404
+
+    if not user.check_password(old_password):
+        return jsonify({'error': 'Current password is incorrect.'}), 403
+
+    # Update password
+    user.set_password(new_password)
+    db.session.commit()
+
+    return jsonify({'message': 'Password changed successfully.'}), 200
+
 
 @app.route('/api/user-profile', methods=['GET'])
 def get_user_profile():
