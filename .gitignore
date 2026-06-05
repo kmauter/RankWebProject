@@ -13,6 +13,7 @@ node_modules/
 venv/
 .vscode/
 dist/
+bot/data/
 build/
 
 # dependencies
