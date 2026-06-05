@@ -49,12 +49,41 @@ class RankBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         """Called when the bot is starting up. Sync commands globally."""
+        # Set up global error handler for slash commands
+        self.tree.on_error = self._on_app_command_error
+
         await self.tree.sync()
         logger.info("Slash commands synced globally.")
 
         # Start the deadline reminder background loop
         self.check_deadline_reminders.start()
         logger.info("Deadline reminder loop started.")
+
+    async def _on_app_command_error(
+        self,
+        interaction: discord.Interaction,
+        error: app_commands.AppCommandError,
+    ) -> None:
+        """Global error handler for all slash commands."""
+        # Unwrap the CommandInvokeError to get the original exception
+        original = error.__cause__ if error.__cause__ else error
+        logger.error(
+            "Unhandled error in command '%s': %s",
+            interaction.command.name if interaction.command else "unknown",
+            original,
+            exc_info=original,
+        )
+
+        message = "Something went wrong. Please try again later."
+
+        # Try to respond to the user
+        try:
+            if interaction.response.is_done():
+                await interaction.followup.send(message, ephemeral=True)
+            else:
+                await interaction.response.send_message(message, ephemeral=True)
+        except discord.HTTPException:
+            pass
 
     async def on_ready(self) -> None:
         """Called when the bot has connected to Discord."""

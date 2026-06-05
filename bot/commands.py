@@ -84,6 +84,7 @@ def register_commands(
     group.add_command(_status_command)
     group.add_command(_active_command)
     group.add_command(_channel_command)
+    group.add_command(_comments_command)
 
 
 @app_commands.command(name="track", description="Track a RankWeb game in this server")
@@ -380,7 +381,39 @@ async def _results_command(interaction: discord.Interaction, game_code: str) -> 
         return
 
     embed = format_results_embed(game_data, songs)
-    await interaction.response.send_message(embed=embed)
+
+    # Check if the embed exceeds Discord limits and needs pagination
+    # Embed field limit is 1024 chars, total embed limit is 6000 chars
+    embed_length = len(embed.title or "") + len(embed.description or "")
+    for field in embed.fields:
+        embed_length += len(field.name) + len(field.value)
+
+    if embed_length > 5500 or len(songs) > 15:
+        # Use paginated results
+        from bot.pagination import PaginatedView, paginate_embed_fields
+        sorted_songs = sorted(songs, key=lambda s: s.get("averageRank") or float("inf"))
+        items = []
+        for i, song in enumerate(sorted_songs, start=1):
+            song_title = song.get("title") or "Unknown"
+            artist = song.get("artist", "Unknown")
+            avg_rank = song.get("averageRank")
+            submitter = song.get("user", {}).get("username", "Unknown")
+            rank_str = f"avg: {avg_rank:.2f}" if avg_rank is not None else "no rankings"
+            items.append((
+                f"#{i} — {song_title} by {artist}",
+                f"{rank_str}\nSubmitted by: {submitter}",
+            ))
+
+        base_embed = discord.Embed(
+            title=embed.title,
+            description=embed.description,
+            color=embed.color,
+        )
+        pages = paginate_embed_fields(base_embed, items, per_page=10)
+        view = PaginatedView(pages, author_id=interaction.user.id)
+        await interaction.response.send_message(embed=pages[0], view=view)
+    else:
+        await interaction.response.send_message(embed=embed)
 
 
 @app_commands.command(name="status", description="Show all tracked games and their status")
@@ -429,6 +462,20 @@ async def _status_command(interaction: discord.Interaction) -> None:
         return
 
     # Requirement 2.1: Display all tracked games with title, stage, due date
+    # For completed games, fetch the winning song
+    for game_data in games:
+        if game_data.get("status") == "results":
+            songs = await _api_client.get_game_songs(game_data.get("gameCode", ""))
+            if songs:
+                ranked = [s for s in songs if s.get("averageRank") is not None]
+                if ranked:
+                    winner_song = min(ranked, key=lambda s: s["averageRank"])
+                    game_data["winner"] = {
+                        "title": winner_song.get("title", "Unknown"),
+                        "artist": winner_song.get("artist", "Unknown"),
+                        "submitter": winner_song.get("user", {}).get("username", "Unknown"),
+                    }
+
     embed = format_status_embed(games)
     await interaction.followup.send(embed=embed)
 
@@ -528,3 +575,82 @@ async def _channel_command(
         channel.name,
         channel.id,
     )
+
+
+@app_commands.command(name="comments", description="Show all comments/notes for songs in a game")
+@app_commands.describe(game_code="The game code to show comments for")
+@app_commands.autocomplete(game_code=_tracked_games_autocomplete)
+async def _comments_command(interaction: discord.Interaction, game_code: str) -> None:
+    """Show all user-submitted comments for songs in a tracked game.
+
+    Fetches songs from the API and displays each song's comment
+    alongside the song title, artist, and who submitted it.
+    """
+    assert _store is not None
+    assert _api_client is not None
+
+    server_id = interaction.guild_id
+    if server_id is None:
+        await interaction.response.send_message(
+            "This command can only be used in a server.",
+            ephemeral=True,
+        )
+        return
+
+    # Check if game is tracked in this server
+    config = _store.get_config(server_id)
+    if game_code not in config.tracked_games:
+        await interaction.response.send_message(
+            f"Game `{game_code}` is not tracked in this server. "
+            f"Use `/rank track {game_code}` to start tracking it.",
+            ephemeral=True,
+        )
+        return
+
+    # Fetch game data for the title
+    game_data = await _api_client.get_game(game_code)
+    if game_data is None:
+        await interaction.response.send_message(
+            "Unable to reach the game server. Please try again later.",
+            ephemeral=True,
+        )
+        return
+
+    # Fetch songs
+    songs = await _api_client.get_game_songs(game_code)
+    if not songs:
+        await interaction.response.send_message(
+            f"No songs found for game `{game_code}`.",
+            ephemeral=True,
+        )
+        return
+
+    # Build the comments embed with pagination
+    from bot.pagination import PaginatedView, paginate_embed_fields
+
+    title = game_data.get("title", game_code)
+    items = []
+    for song in songs:
+        song_title = song.get("title", "Unknown")
+        artist = song.get("artist", "Unknown")
+        submitter = song.get("user", {}).get("username", "Unknown")
+        comment = song.get("comment") or "No comment"
+
+        items.append((
+            f"{song_title} by {artist}",
+            f"*{comment}*\n— {submitter}",
+        ))
+
+    base_embed = discord.Embed(
+        title=f"Comments: {title}",
+        description=f"Song notes for **{title}**:",
+        color=discord.Color.purple(),
+    )
+
+    pages = paginate_embed_fields(base_embed, items, per_page=10)
+
+    if len(pages) > 1:
+        view = PaginatedView(pages, author_id=interaction.user.id)
+        await interaction.response.send_message(embed=pages[0], view=view)
+    else:
+        await interaction.response.send_message(embed=pages[0])
