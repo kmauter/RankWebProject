@@ -894,3 +894,99 @@ def delete_user_rankings(game_code):
         return jsonify({'error': 'Invalid or missing token'}), 401
     except Exception:
         return jsonify({'error': 'Internal server error'}), 500
+
+
+# =============================================================================
+# Internal API endpoints (no auth, localhost-only)
+# Used by the Discord bot running on the same machine.
+# =============================================================================
+
+def _is_localhost():
+    """Check if the request originates from localhost."""
+    remote = request.remote_addr
+    return remote in ("127.0.0.1", "::1")
+
+
+@app.route('/api/internal/game/<game_code>', methods=["GET"])
+def internal_get_game(game_code):
+    """Get game details without authentication (localhost only).
+
+    Used by the Discord bot to fetch game info for slash commands
+    and notifications.
+    """
+    if not _is_localhost():
+        return jsonify({'error': 'Forbidden'}), 403
+
+    try:
+        game = Game.query.filter_by(game_code=game_code).first()
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+
+        game_data = {
+            'id': game.id,
+            'title': game.theme,
+            'status': game.stage.value,
+            'description': game.description,
+            'submissionDueDate': game.submission_duedate.strftime('%Y-%m-%d'),
+            'rankDueDate': game.rank_duedate.strftime('%Y-%m-%d'),
+            'gameCode': game.game_code,
+            'owner': {
+                'id': game.owner_id,
+                'username': User.query.get(game.owner_id).username if game.owner_id else None
+            },
+            'maxSubmissionsPerUser': game.max_submissions_per_user,
+            'spotifyPlaylistUrl': game.spotify_playlist_url,
+            'youtubePlaylistUrl': game.youtube_playlist_url
+        }
+
+        return jsonify(game_data), 200
+    except Exception:
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@app.route('/api/internal/game/<game_code>/songs', methods=["GET"])
+def internal_get_game_songs(game_code):
+    """Get game songs without authentication (localhost only).
+
+    Used by the Discord bot to display results for completed games.
+    """
+    if not _is_localhost():
+        return jsonify({'error': 'Forbidden'}), 403
+
+    try:
+        game = Game.query.filter_by(game_code=game_code).first()
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+
+        songs = Song.query.filter_by(game_id=game.id).all()
+
+        song_user_ids = {song.user_id for song in songs if song.user_id}
+        users = {u.id: u for u in User.query.filter(User.id.in_(song_user_ids)).all()}
+
+        song_ids = [song.id for song in songs]
+        stats = {s.song_id: s for s in SongStat.query.filter(
+            SongStat.song_id.in_(song_ids), SongStat.game_id == game.id
+        ).all()}
+
+        song_data = []
+        for song in songs:
+            stat = stats.get(song.id)
+            song_user = users.get(song.user_id)
+            song_data.append({
+                'id': song.id,
+                'title': song.title,
+                'artist': song.artist,
+                'comment': song.comment,
+                'user': {
+                    'id': song.user_id,
+                    'username': song_user.username if song_user else None
+                },
+                'averageRank': stat.avg_rank if stat else None,
+                'median_rank': stat.median_rank if stat else None,
+                'rank_range': stat.rank_range if stat else None,
+                'controversy': stat.controversy if stat else None,
+            })
+
+        return jsonify(song_data), 200
+    except Exception:
+        return jsonify({'error': 'Internal server error'}), 500

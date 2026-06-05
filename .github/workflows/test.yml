@@ -14,7 +14,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt pytest pytest-flask PyJWT
+        run: pip install -r requirements.txt pytest pytest-flask PyJWT discord.py aiohttp pytest-asyncio pytest-aiohttp
 
       - name: Run backend tests
         run: pytest tests/ -v
@@ -60,7 +60,7 @@ jobs:
         run: pip install ruff
 
       - name: Lint backend
-        run: ruff check app/ --select E,F,W --ignore E501
+        run: ruff check app/ bot/ --select E,F,W --ignore E501
 
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
