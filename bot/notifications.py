@@ -139,10 +139,17 @@ def format_results_embed(game_data: dict, songs: list[dict]) -> discord.Embed:
         song_title = song.get("title") or song.get("song_name") or "Unknown"
         artist = song.get("artist", "Unknown")
         avg_rank = song.get("averageRank")
+        submitter = song.get("user", {}).get("username", "Unknown")
         if avg_rank is not None:
-            results_lines.append(f"**#{i}** — {song_title} by {artist} (avg: {avg_rank:.2f})")
+            results_lines.append(
+                f"**#{i}** — {song_title} by {artist} (avg: {avg_rank:.2f})\n"
+                f"  Submitted by: {submitter}"
+            )
         else:
-            results_lines.append(f"**#{i}** — {song_title} by {artist} (no rankings)")
+            results_lines.append(
+                f"**#{i}** — {song_title} by {artist} (no rankings)\n"
+                f"  Submitted by: {submitter}"
+            )
 
     # Discord embed field value limit is 1024 chars, use description for long lists
     results_text = "\n".join(results_lines) if results_lines else "No songs to display."
@@ -156,6 +163,7 @@ def format_status_embed(games: list[dict]) -> discord.Embed:
     """Format the status display showing all tracked games.
 
     Shows each game's title, current stage, and relevant due date.
+    For completed games, shows the winning submission and submitter.
 
     Validates: Requirements 2.1
     """
@@ -175,7 +183,17 @@ def format_status_embed(games: list[dict]) -> discord.Embed:
         stage_label = _format_stage_label(status)
         due_date = _get_relevant_due_date(game)
 
-        field_value = f"Stage: {stage_label}\nDue: {due_date}"
+        # Show winner for completed games
+        winner = game.get("winner")
+        if winner and status == "results":
+            field_value = (
+                f"Stage: {stage_label}\n"
+                f"Winner: {winner['title']} by {winner['artist']}"
+                f" (submitted by {winner['submitter']})"
+            )
+        else:
+            field_value = f"Stage: {stage_label}\nDue: {due_date}"
+
         embed.add_field(name=game_title, value=field_value, inline=False)
 
     return embed
