@@ -1,0 +1,23 @@
+[Unit]
+Description=RankWeb Discord Bot
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/RankWebProject
+ExecStart=/root/RankWebProject/venv/bin/python -m bot.main
+Restart=on-failure
+RestartSec=10
+
+# Environment variables are loaded from app/.env by bot/config.py,
+# but you can also set them explicitly here or via EnvironmentFile:
+# EnvironmentFile=/root/RankWebProject/app/.env
+
+# Logging — output goes to the systemd journal
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=rankbot
+
+[Install]
+WantedBy=multi-user.target

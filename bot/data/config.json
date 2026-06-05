@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "457905989232885761": {
+      "server_id": 457905989232885761,
+      "tracked_games": [
+        "7QN32M"
+      ],
+      "notification_channel_id": 457905989232885763,
+      "ranker_role_id": 1512551101201645598,
+      "reminders_sent": []
+    }
+  }
+}

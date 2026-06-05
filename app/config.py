@@ -20,3 +20,7 @@ class Config:
         f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Discord bot webhook notification settings
+    BOT_NOTIFY_URL = os.getenv("BOT_NOTIFY_URL", "http://localhost:8080/notify")
+    BOT_NOTIFY_SECRET = os.getenv("BOT_NOTIFY_SECRET", "")

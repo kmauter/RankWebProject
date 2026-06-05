@@ -4,12 +4,44 @@ from app import app, db
 from app.models import Game, Stage, Rank, Song, SongStat
 from datetime import datetime, timezone
 import random
+import requests
 from app.spotifyactions import create_spotify_playlist_for_game
 from app.youtubeactions import create_youtube_playlist_for_game
 from statistics import mean, median
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)
+
+
+def notify_bot_stage_transition(game_code: str, new_stage: str) -> None:
+    """POST to the Discord bot's /notify endpoint when a game stage transition occurs.
+
+    Handles connection errors gracefully — logs and continues so the scheduler
+    is never disrupted if the bot is unreachable.
+    """
+    notify_url = app.config.get("BOT_NOTIFY_URL")
+    notify_secret = app.config.get("BOT_NOTIFY_SECRET")
+
+    if not notify_url or not notify_secret:
+        logger.debug("BOT_NOTIFY_URL or BOT_NOTIFY_SECRET not configured; skipping bot notification.")
+        return
+
+    payload = {
+        "game_code": game_code,
+        "new_stage": new_stage,
+        "secret": notify_secret,
+    }
+
+    try:
+        resp = requests.post(notify_url, json=payload, timeout=5)
+        if resp.ok:
+            logger.info(f"Bot notified: game={game_code} new_stage={new_stage}")
+        else:
+            logger.warning(
+                f"Bot notification returned {resp.status_code} for game={game_code}: {resp.text[:200]}"
+            )
+    except requests.RequestException as exc:
+        logger.warning(f"Failed to notify bot for game={game_code}: {exc}")
 
 
 def update_game_stages():
@@ -69,6 +101,7 @@ def update_game_stages():
 
             db.session.commit()
             logger.info(f"Game {game.id} rolled over to finished stage.")
+            notify_bot_stage_transition(game.game_code, "results")
 
         # ROLL GAMES OVER FROM SUBMIT TO RANK STAGE
         games = Game.query.filter(
@@ -118,6 +151,7 @@ def update_game_stages():
 
             db.session.commit()
             logger.info(f"Game {game.id} rolled over to ranking stage.")
+            notify_bot_stage_transition(game.game_code, "rankings")
 
 
 def start_scheduler():
