@@ -24,3 +24,4 @@ class Config:
     # Discord bot webhook notification settings
     BOT_NOTIFY_URL = os.getenv("BOT_NOTIFY_URL", "http://localhost:8080/notify")
     BOT_NOTIFY_SECRET = os.getenv("BOT_NOTIFY_SECRET", "")
+

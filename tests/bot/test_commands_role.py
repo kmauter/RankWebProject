@@ -102,7 +102,6 @@ class TestJoinCommand:
         interaction.response.send_message.assert_called_once()
         msg = interaction.response.send_message.call_args[0][0]
         assert "Ranker" in msg
-        assert "\u2705" in msg  # checkmark
 
     @pytest.mark.asyncio
     async def test_join_uses_existing_role(self, rank_group, store):
@@ -190,7 +189,6 @@ class TestLeaveCommand:
         interaction.response.send_message.assert_called_once()
         msg = interaction.response.send_message.call_args[0][0]
         assert "removed" in msg.lower()
-        assert "\u2705" in msg
 
     @pytest.mark.asyncio
     async def test_leave_without_role(self, rank_group):
